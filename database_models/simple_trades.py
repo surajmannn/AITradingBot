@@ -30,7 +30,7 @@ def add_position(values):
         "INSERT INTO simple_trades ("
         "userID, mla, ticker, position, quantity, stock_price, total_price, "
         "RSI, BB_upper_band, BB_lower_band, ADX, DI_pos, DI_neg, confidence_rating"
-        ") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        ") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
     )
     data = run_alter_query(query, values)
     return data
