@@ -3,10 +3,10 @@
 """ Runs on live market, creates buy and short signals on selected securities and 
     runs MLP Regression model for confidence of price changing direction """
 
-from bollinger_bands import *
-from RSI import *
+from technical_indicators.bollinger_bands import *
+from technical_indicators.RSI import *
 from buy_and_sell import *
-from confidence_rating import *
+from ml_models.confidence_rating import *
 import time
 import yahoo_fin.stock_info as si
 

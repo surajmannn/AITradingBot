@@ -46,7 +46,7 @@ def RSI(ticker, period_length):
         print(f"\nRSI at {last_time}: {last_rsi:.2f}")
 
         # Wait for one minute before updating the RSI calculation again
-        time.sleep(10)
+        time.sleep(5)
 
 RSI('GBPUSD=X', 14)
 #RSI('AAPL', 14)
