@@ -20,6 +20,9 @@ CREATE TABLE simple_trades (
       RSI FLOAT,
       BB_upper_band FLOAT,
       BB_lower_band FLOAT,
+      ADX FLOAT,
+      DI_Pos FLOAT,
+      DI_neg FLOAT,
       confidence_rating FLOAT,
       FOREIGN KEY (userID) REFERENCES users (ID),
       PRIMARY KEY (ID)

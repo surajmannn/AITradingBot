@@ -20,7 +20,12 @@ def get_users_trades(id):
 
 def add_position(values):
     # position = 1 if Buy and 2 if Sell
-    query = "INSERT INTO simple_trades (userID, ticker, position, quantity, stock_price, total_price, RSI, BB_upper_band, BB_lower_band, confidence_rating) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    query = (
+        "INSERT INTO simple_trades ("
+        "userID, ticker, position, quantity, stock_price, total_price, "
+        "RSI, BB_upper_band, BB_lower_band, ADX, DI_pos, DI_neg, confidence_rating"
+        ") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    )
     data = run_alter_query(query, values)
     return data
 
