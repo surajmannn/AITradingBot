@@ -6,11 +6,17 @@
       position = 0 if position closed
       position = 1 if buy order
       position = 2 if sell order
+
+      mla - Machine Learning Algorithm
+      mla = MLP for Multi Layer Perceptron
+      mla = SVM for Support Vector Machine
+      mla = LSTM for Long Short Term Memory
 */
 
 CREATE TABLE simple_trades (
       ID INT NOT NULL AUTO_INCREMENT,  
       userID INT NOT NULL,
+      ML_type TEXT,
       ticker TEXT,
       position INT,
       quantity INT,

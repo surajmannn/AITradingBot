@@ -17,12 +17,18 @@ def get_users_trades(id):
     data = run_value_query(query, value)
     return data
 
+# Pull specific trades related to specific machine learning aglorithms
+def get_mla_trades(mla):
+    query = "SELECT * FROM simple_trades WHERE mla = %s"
+    value = mla
+    data = run_value_query(query, value)
+    return data
 
 def add_position(values):
     # position = 1 if Buy and 2 if Sell
     query = (
         "INSERT INTO simple_trades ("
-        "userID, ticker, position, quantity, stock_price, total_price, "
+        "userID, mla, ticker, position, quantity, stock_price, total_price, "
         "RSI, BB_upper_band, BB_lower_band, ADX, DI_pos, DI_neg, confidence_rating"
         ") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
     )
