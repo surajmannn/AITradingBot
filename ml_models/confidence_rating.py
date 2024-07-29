@@ -47,6 +47,8 @@ class Confidence_Rating:
             ts = TimeSeries(key=api_key, output_format='pandas')
             data, _ = ts.get_intraday(symbol=ticker_symbol, interval=model_interval, outputsize='full')
             data = data.iloc[::-1]
+
+            # SHOULD EDIT BASED ON FOREX TIMES
             data = data.between_time('09:30', '16:00')  # Only recieve data from normal US stock exchange trading hours
             close = '4. close'
         except:

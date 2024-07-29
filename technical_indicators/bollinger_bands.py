@@ -7,7 +7,7 @@ def bollinger_bands(ticker, interval):
 
     # 1m interval max 7d period on API call
     if (interval in ('1m', '2m', '5m', '10m', '15m')):
-        data_period = '7d'
+        data_period = '2d'
     else:
         data_period = '30d'
 
@@ -15,11 +15,11 @@ def bollinger_bands(ticker, interval):
     symbol = ticker
 
     # Use yfinance to retrieve the stock data and load it into a pandas DataFrame
-    df = yf.download(symbol, interval=interval, period=data_period, progress=False)
+    stock_data = yf.download(symbol, interval=interval, period=data_period, progress=False)
 
     # Calculate the 20-day moving average and standard deviation using the rolling() method
-    rolling_mean = df['Close'].rolling(window=20).mean()
-    rolling_std = df['Close'].rolling(window=20).std()
+    rolling_mean = stock_data['Close'].rolling(window=20).mean()
+    rolling_std = stock_data['Close'].rolling(window=20).std()
 
     # Calculate the upper and lower bands using the extracted data
     upper_band = rolling_mean + (2 * rolling_std)
