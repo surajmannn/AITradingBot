@@ -39,7 +39,7 @@ def RSI(ticker, period_length):
         #print("L: ", loss)
         #print("G: ", avg_gain)
         #print("L: ", avg_loss)
-
+        
         # Print the last RSI value
         last_rsi = rsi.iloc[-1]
         last_time = rsi.index[-1]

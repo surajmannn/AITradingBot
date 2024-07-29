@@ -1,6 +1,7 @@
 import yfinance as yf
 import yahoo_fin.stock_info as si
 import time
+import pandas as pd
 
 # Define the stock symbol and the time interval for which you want to retrieve data
 symbol = 'GBPUSD=X'
@@ -10,10 +11,11 @@ def boiler_bands(ticker, interval):
 
     symbol = ticker
     interval = interval
+    start_date = pd.Timestamp.today().strftime('%Y-%m-%d')
 
     while True:
         # Use yfinance to retrieve the stock data and load it into a pandas DataFrame
-        df = yf.download(symbol, interval=interval, period='7d', progress=False)
+        df = yf.download(symbol, interval=interval, period='1d', progress=False)
 
         # Calculate the 20-day moving average and standard deviation using the rolling() method
         rolling_mean = df['Close'].rolling(window=20).mean()

@@ -67,7 +67,7 @@ class Confidence_Rating:
         # Calculate the input features usinig built in python library ta
         # Create the input features and labels
         bb = BollingerBands(data[close])
-        data['bb_upper'], data['bb_middle'], data['bb_lower'] = bb.bollinger_mavg(), bb.bollinger_hband(), bb.bollinger_lband()
+        data['bb_upper'], data['bb_middle'], data['bb_lower'] = bb.bollinger_hband(), bb.bollinger_mavg(), bb.bollinger_lband()
         data['rsi'] = rsi(data[close], window)
 
         # Drop rows with missing values

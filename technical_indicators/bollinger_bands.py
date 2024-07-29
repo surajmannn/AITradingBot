@@ -7,9 +7,9 @@ def bollinger_bands(ticker, interval):
 
     # 1m interval max 7d period on API call
     if (interval in ('1m', '2m', '5m', '10m', '15m')):
-        data_period = '2d'
+        data_period = '5d'
     else:
-        data_period = '30d'
+        data_period = '1mo'
 
     # security to be used
     symbol = ticker
