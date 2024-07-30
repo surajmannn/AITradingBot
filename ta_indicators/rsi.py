@@ -21,9 +21,13 @@ def rsi(ticker, interval, period_length):
     # set window period from input parameter
     window = period_length
 
+    # Retrieve security data from yfinance api
     stock_data = yf.download(symbol, interval=interval, period=data_period, progress=False)
+
+    # Get RSI values from RSI function in ta library
     rsi = ta.momentum.rsi(stock_data['Close'], window)
 
+    # Get latest RSI value
     current_rsi = rsi[-1]
 
     return current_rsi

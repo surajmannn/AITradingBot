@@ -22,11 +22,17 @@ def bollinger_bands(ticker, interval, period_length):
     # set window period from input parameter
     window = period_length
 
+    # Create pandas data frame for indicator values
     bb_data = pd.DataFrame()
+
+    # Get security data from yfinance api
     stock_data = yf.download(symbol, interval=interval, period=data_period, progress=False)
+
+    # Use Bollinger Band technical indicator from ta library to get upper and lower bands
     bb = ta.volatility.BollingerBands(stock_data['Close'], window)
     bb_data['bb_upper'], bb_data['bb_middle'], bb_data['bb_lower'] = bb.bollinger_hband(), bb.bollinger_mavg(), bb.bollinger_lband()
 
+    # Get latest upper and lower band values
     current_bb_upper = bb_data['bb_upper'][-1]
     current_bb_lower = bb_data['bb_lower'][-1]
 

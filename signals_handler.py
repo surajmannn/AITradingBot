@@ -4,7 +4,12 @@
     runs MLP Regression model for confidence of price changing direction """
 
 from technical_indicators.bollinger_bands import *
+from ta_indicators.bollinger_bands import *
 from technical_indicators.RSI import *
+from ta_indicators.rsi import *
+from technical_indicators.dmi_adx import *
+from ta_indicators.dmi_adx import *
+from ta_indicators.rsi import *
 from buy_and_sell import *
 from ml_models.confidence_rating import *
 import time

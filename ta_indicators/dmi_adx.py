@@ -21,7 +21,9 @@ def dmi_adx(ticker, interval, period_length):
     # set window period from input parameter
     window = period_length
 
+    # Create pandas dataframe for technical indicator values
     dmiadx_data = pd.DataFrame()
+
     # Use yfinance to retrieve the stock data and load it into a pandas DataFrame
     stock_data = yf.download(symbol, interval=interval, period=data_period, progress=False)
 
@@ -30,6 +32,7 @@ def dmi_adx(ticker, interval, period_length):
     dmiadx_data['+DI'] = ta.trend.adx_pos(stock_data['High'], stock_data['Low'], stock_data['Close'])
     dmiadx_data['-DI'] = ta.trend.adx_neg(stock_data['High'], stock_data['Low'], stock_data['Close'])
 
+    # Get latest indicator values
     current_adx = dmiadx_data['ADX'][-1]
     current_DI_pos = dmiadx_data['+DI'][-1]
     current_DI_neg = dmiadx_data['-DI'][-1]
