@@ -9,75 +9,27 @@ warnings.simplefilter(action='ignore')
 
 import pandas as pd
 from sklearn.neural_network import MLPRegressor
-from alpha_vantage.timeseries import TimeSeries
-from ta.volatility import BollingerBands
-from ta.momentum import rsi as rsi
-import yfinance as yf
+from ta_indicators.dataset_preparation import *
 
 
 # Class for creating MLP Regression model objects for selected ticker
 class Confidence_Probability:
 
     # Initialise object with selected security, trading interval, and RSI lookback period
-    def __init__(self, ticker, interval, window):
+    def __init__(self, ticker, interval, training_range):
         self.ticker = ticker
         self.interval = interval
-        self.window = window
-        self.close = ''
+        self.training_range = training_range
         
         # Initialise an MLP Regressor model using input parameters
-        self.model = self.create_model(ticker, interval, window)
-
+        self.model = self.create_model(ticker, interval)
 
     
     # Build the model from the object initialisation 
-    def create_model(self, ticker, interval, window):
+    def create_model(self, ticker, interval):
 
-        # Set data parameters for model
-        api_key = '0T2WORTYUXU5Z4XA'    # My alpha vantage API key
-        ticker_symbol = ticker
-        interval = interval
-        window = window
-        close = self.close
-
-        try:
-            # Fetch the data from the Alpha Vantage API
-            # Alpha Vantage API requires interval written as min not m
-            model_interval = interval + "in"
-            ts = TimeSeries(key=api_key, output_format='pandas')
-            data, _ = ts.get_intraday(symbol=ticker_symbol, interval=model_interval, outputsize='full')
-            data = data.iloc[::-1]
-
-            # SHOULD EDIT BASED ON FOREX TIMES
-            data = data.between_time('09:30', '16:00')  # Only recieve data from normal US stock exchange trading hours
-            close = '4. close'
-        except:
-            # 1m interval max 7d period on API call
-            if (interval == '1m'):
-                data_period = '7d'
-            else:
-                data_period = '30d'
-            # Fetch data from yf API as not available through Alpha Vantage API
-            data = yf.download(ticker_symbol, interval=interval, period=data_period, progress=False)
-            close = 'Close'
-
-        # Depending on API used, set panadaframe string for close column
-        self.close = close
-
-        # Calculate the input features usinig built in python library ta
-        # Create the input features and labels
-        bb = BollingerBands(data[close])
-        data['bb_upper'], data['bb_middle'], data['bb_lower'] = bb.bollinger_hband(), bb.bollinger_mavg(), bb.bollinger_lband()
-        data['rsi'] = rsi(data[close], window)
-
-        # Drop rows with missing values
-        data = data.dropna()
-
-        # Create the input features
-        required_data = data[[close, 'rsi', 'bb_upper', 'bb_lower']]
-        pd.set_option('display.max_rows', None)
-        pd.set_option('display.max_columns', None)
-        required_data.dropna(inplace=True)
+        # Fetch data from yf API as not available through Alpha Vantage API
+        training_data = prepare_training_dataset(self.ticker, self.interval, self.training_range)
 
         # Initiate lists for input data to be used in the model
         y = []
@@ -88,25 +40,10 @@ class Confidence_Probability:
 
         # Find relevant data for model from historical data
         # Only interested in data where technical indicators hit requirements to reduce imbalancing
-        for i in range(len(required_data)-look_ahead):
+        for i in range(len(training_data)-look_ahead):
 
-            # check if RSI is below 30 and price is below boiler band lower band
-            if data.iloc[i]['rsi'] < 30 and data.iloc[i]['bb_lower'] > data.iloc[i][close]:
-                # check if the price has gone up at look ahead point
-                if data.iloc[i+look_ahead][close] > data.iloc[i][close]:
-                    y.append(1) # price trend changed from downward to upward
-                else:
-                    y.append(0) # price trend did not change or continued
-                X.append(required_data.iloc[i])
-
-            # check if RSI is above 70 and price is above boiler band upper band
-            elif data.iloc[i]['rsi'] > 70 and data.iloc[i]['bb_upper'] < data.iloc[i][close]:
-                # check if the price has gone down at look ahead point
-                if data.iloc[i+look_ahead][close] < data.iloc[i][close]:
-                    y.append(1) # price trend changed from upward to downward
-                else:
-                    y.append(0) # price trend did not change or continued
-                X.append(required_data.iloc[i])
+            """ WRITE STRATEGY FOR DATA POINTS,
+                SAME AS SIGNAL GENERATION STRATEGY PARAMS"""
 
                 
         # Train the neural network
@@ -119,6 +56,7 @@ class Confidence_Probability:
 
     # Using the model, create confidence rating predictions
     # takes curent stock price, the RSI reading, Boiler Band lower and upper bands as inputs
+    """The Columns: .index, Close, bb_upper, bb_middle, bb_lower, rsi, ADX, DI+, DI-"""
     def confidence_rating(self, price, rsi, bb_upper, bb_lower):
         close = self.close
         # Create test data frame using input parameters for prediction
