@@ -14,23 +14,33 @@ from ml_models.confidence_rating import *
 import time
 import yahoo_fin.stock_info as si
 
-class singal_generation():
+class Singal_Generation():
 
     # Class constructor with trading paramater inputs
-    def __init__(self, ticker, interval, window, rsi_oversold_level, rsi_overbought_level, confidence_boundary, stoploss_range):
+    def __init__(self, ticker, interval, window, rsi_oversold_level, rsi_overbought_level, stoploss_range):
         self.ticker = ticker                                # Stock ticker
         self.interval = interval                            # Trading interval (e.g. 1min, 5min, 10min, 1hour, 4hour etc...)
         self.window = window                                # Look back period
         self.rsi_oversold_level = rsi_oversold_level        # RSI oversold level (Usually 30)
         self.rsi_overbought_level = rsi_overbought_level    # RSI overbought level (Usually 70)
-        self.confidence_boundary = confidence_boundary      # Confidence rating boundary required for trade
         self.stoploss_range = stoploss_range                # Percentage stop loss for positions
 
 
-        def signalling():
+    def signalling():
 
-            # use loop, or return?
-            return 0
+        """ 
+        FOR BUY/SHORT:
+        BB Above or below band with supporting RSI reading
+        Above average gap between DI+ and DI- and No extreme ADX value, i.e. 35+ ---> Then produce signal
+        """
+
+        """
+        FOR CLOSE:
+        RSI above/below 50 and ADX below 25, otherwise continue holding as trend present.
+        """
+
+        # use loop, or return?
+        return 0
         
 
     # Check current price against entry price for stoploss margin forcing a closing of a position
