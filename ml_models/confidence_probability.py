@@ -129,21 +129,6 @@ class Confidence_Probability:
         return round(rating[0], 2)
 
 
-
-"""AAPL = Confidence_Rating('AAPL', '1min', 14)
-rating = AAPL.confidence_rating(161.85, 71, 161.78, 160.12)
-rating2 = AAPL.confidence_rating(160.55, 28.37, 161.04, 160.60)
-rating3 = AAPL.confidence_rating(162.01, 80, 161.78, 160.12)
-rating4 = AAPL.confidence_rating(160.35, 23.37, 161.04, 160.60)
-rating5 = AAPL.confidence_rating(160.45, 28.45, 162.14, 160.58)
-
-print("Rating1: ", rating)
-print("Rating2: ", rating2)
-print("Rating3: ", rating3)
-print("Rating4: ", rating4)
-print("Rating5: ", rating5)"""
-
-#AAPL = Confidence_Rating('GBPUSD=X', '1min', 14)
-#AAPL = Confidence_Rating('AAPL', '1min', 14)
-#rating = AAPL.confidence_rating(1.2521, 50, 1.2523, 1.2520)
+#GBP = Confidence_Rating('GBPUSD=X', '1min', 14)
+#rating = GBP.confidence_rating(1.2521, 50, 1.2523, 1.2520)
 #print(rating)
