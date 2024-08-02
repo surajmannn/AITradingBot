@@ -25,6 +25,6 @@ def prepare_dataset(ticker, data_period, interval):
 
     #print(dataset)
 
-    return dataset
+    #return dataset
 
-#prepare_dataset('GBPUSD=X', '5d', '1m')
+prepare_dataset('GBPUSD=X', '5d', '1m')

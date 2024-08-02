@@ -14,7 +14,7 @@ from ml_models.confidence_rating import *
 import time
 import yahoo_fin.stock_info as si
 
-class Singal_Generation():
+class Signal_Generation():
 
     # Class constructor with trading paramater inputs
     def __init__(self, ticker, interval, window, rsi_oversold_level, rsi_overbought_level, stoploss_range):
