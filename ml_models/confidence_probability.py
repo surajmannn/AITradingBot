@@ -36,29 +36,31 @@ class Confidence_Probability:
         X = []
 
         # select look ahead time interval (Price at n amount of time after to determine price at that point)
-        look_ahead = 2 # ?????
+        look_ahead = [2,5,10,15,30]
 
         # Find relevant data for model from historical data
         # Only interested in data where technical indicators hit requirements to reduce imbalancing
-        for i in range(len(training_data)-look_ahead):
+        for i in range(len(training_data)-max(look_ahead)):
 
             """ WRITE STRATEGY FOR DATA POINTS,
                 SAME AS SIGNAL GENERATION STRATEGY PARAMS"""
             
             """ NEED TO THINK OF SELECTION FOR TRAINING OUTCOMES. I.e, how many rows and how to determine up to what point price changed
                 how to label? how many data points to include? """
+            
 
-        if self.model == 1:     
+
+        """if self.model == 1:     
             # Train the neural network
             trained_model = MLPRegressor(hidden_layer_sizes=(40,40), max_iter=1000, random_state=42)
             trained_model.fit(X, y)
         if self.model == 2:
             trained_model = 0 
         if self.model == 3:
-            return 0
+            return 0"""
 
         # return the created model
-        return trained_model
+        return 0 #trained_model
     
 
     # Using the model, create confidence rating predictions
@@ -74,6 +76,7 @@ class Confidence_Probability:
         return round(rating[0], 2)
 
 
-#GBP = Confidence_Rating('GBPUSD=X', '1min', 14)
+#GBP = Confidence_Probability('GBPUSD=X', '1m', 2, 1)
+#GBP.create_model()
 #rating = GBP.confidence_rating(1.2521, 50, 1.2523, 1.2520)
 #print(rating)

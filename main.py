@@ -1,6 +1,8 @@
 """ Main file for the project """
 
 from signals_handler import Signal_Handler
+from ml_models.confidence_probability import *
+from ta_indicators.dataset_preparation import *
 
 def main():
 
@@ -19,5 +21,16 @@ def main():
     AUDJPY.signalling(35.1, 64.9, 4)
 
 
+def testing():
+
+    # Check dataset in prepare data
+    print(prepare_training_dataset('GBPUSD=X', '1m', 2))
+
+    # Check model training
+    #GBP = Confidence_Probability('GBPUSD=X', '1m', 2, 1)
+    #GBP.create_model()
+
+
 if __name__ == "__main__":
-    main()
+    #main()
+    testing()

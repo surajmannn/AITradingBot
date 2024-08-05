@@ -1,8 +1,8 @@
 """ This file prepares the dataset by adding all technical analysis indicator values to the API dataset for desired period """
 
-from bollinger_bands import *
-from dmi_adx import *
-from rsi import *
+from ta_indicators.bollinger_bands import *
+from ta_indicators.dmi_adx import *
+from ta_indicators.rsi import *
 import pandas as pd
 import yfinance as yf
 
@@ -70,4 +70,4 @@ def get_dates_list(ticker):
 
 
 #prepare_dataset('GBPUSD=X', '5d', '1m')
-print(prepare_training_dataset('GBPUSD=X', '1m', 2))
+#print(prepare_training_dataset('GBPUSD=X', '1m', 2))
