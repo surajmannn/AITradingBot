@@ -24,11 +24,10 @@ def main():
 def testing():
 
     # Check dataset in prepare data
-    print(prepare_training_dataset('GBPUSD=X', '1m', 2))
+    #print(prepare_training_dataset('GBPUSD=X', '1m', 2))
 
     # Check model training
-    #GBP = Confidence_Probability('GBPUSD=X', '1m', 2, 1)
-    #GBP.create_model()
+    GBP = Confidence_Probability('GBPUSD=X', '1m', 2, 1)
 
 
 if __name__ == "__main__":

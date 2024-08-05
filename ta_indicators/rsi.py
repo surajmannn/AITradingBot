@@ -6,9 +6,9 @@ import ta
 def rsi(security_data):
 
     # Get RSI values from RSI function in ta library
-    security_data['rsi'] = ta.momentum.rsi(security_data['Close'])
+    security_data['RSI'] = ta.momentum.rsi(security_data['Close'])
 
     # Round RSI values to 2 decimal places
-    security_data['rsi'] = security_data['rsi'].round(2)
+    security_data['RSI'] = security_data['RSI'].round(2)
 
     return security_data

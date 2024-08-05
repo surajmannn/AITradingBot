@@ -37,11 +37,23 @@ class Confidence_Probability:
 
         # select look ahead time interval (Price at n amount of time after to determine price at that point)
         look_ahead = [2,5,10,15,30]
+        count = 0
 
         # Find relevant data for model from historical data
         # Only interested in data where technical indicators hit requirements to reduce imbalancing
-        for i in range(len(training_data)-max(look_ahead)):
+        for i in range(len(training_data) - max(look_ahead) - 1):
 
+            if count == 10:
+                print("Current Price: ")
+                print(training_data.iloc[i])
+                print("\n")
+                for period in look_ahead:
+                    print("Look Ahead Period: ", period)
+                    print(training_data.iloc[i+period])
+                    print("\n")        
+            count += 1
+
+        
             """ WRITE STRATEGY FOR DATA POINTS,
                 SAME AS SIGNAL GENERATION STRATEGY PARAMS"""
             
@@ -60,7 +72,7 @@ class Confidence_Probability:
             return 0"""
 
         # return the created model
-        return 0 #trained_model
+        #return training_data #trained_model
     
 
     # Using the model, create confidence rating predictions
