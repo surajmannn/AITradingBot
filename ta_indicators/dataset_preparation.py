@@ -70,5 +70,4 @@ def get_dates_list(ticker):
 
 
 #prepare_dataset('GBPUSD=X', '5d', '1m')
-
-prepare_training_dataset('GBPUSD=X', '1m', 2) 
+print(prepare_training_dataset('GBPUSD=X', '1m', 2))

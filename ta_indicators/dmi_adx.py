@@ -10,4 +10,7 @@ def dmi_adx(security_data):
     security_data['DI+'] = ta.trend.adx_pos(security_data['High'], security_data['Low'], security_data['Close'])
     security_data['DI-'] = ta.trend.adx_neg(security_data['High'], security_data['Low'], security_data['Close'])
 
+    # Calculate the volatility range (absolute value of the difference between DI+ and DI-)
+    security_data['Volatility'] = (security_data['DI+'] - security_data['DI-']).abs()
+
     return security_data
