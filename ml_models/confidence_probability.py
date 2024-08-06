@@ -32,12 +32,12 @@ class Confidence_Probability:
         self.ticker = ticker                        # Security name
         self.interval = interval                    # Desired chart interval (i.e, 1min, 5min)
         self.training_range = training_range        # Select amount of historic market weeks for training dataset
-        self.desired_model = desired_model          # 1 for MLPRegressor, 2 for SVM, 3 for LSTM
+        self.desired_model = desired_model          # 1 for MLPRegressor, 2 for SVM, 3 for Random Forest, 4 for LSTM
         self.training_data_set = None
         self.look_ahead = look_ahead_values         # Array of +n price intervals for determining labelling
         
-        # Initialise an MLP Regressor model using input parameters
-        #self.model = self.create_model()
+        # Initialise and train the model on class construction
+        self.model = self.create_model()
 
     
     # Build the model from the object initialisation 
@@ -82,28 +82,33 @@ class Confidence_Probability:
     # This function creates and trains the machine learning models based on the desired model
     def create_model(self):
 
-            # Obtain the training data for model training
-            training_data = self.create_training_data()
+        # Obtain the training data for model training
+        training_data = self.create_training_data()
 
-            # Define training data as all columns except labels columns
-            X = training_data.drop(columns=['Label'])
+        # Define training data as all columns except labels columns
+        X = training_data.drop(columns=['Label'])
 
-            # y output to be labels column
-            y = training_data['Label']
+        # y output to be labels column
+        y = training_data['Label']
 
-            if self.desired_model == 1:     
-                # Train the neural network
-                #trained_model = MLPClassifier(hidden_layer_sizes=(40,40), max_iter=1000, random_state=42)
-                #trained_model.fit(X, y)
-                trained_model = 0
-            
-            if self.desired_model == 2:
-                trained_model = 0 
-            
-            if self.desired_model == 3:
-                trained_model = 0
+        # Determine model
+        if self.desired_model == 1:
+            trained_model = MLPClassifier(hidden_layer_sizes=(100,100), max_iter=500, random_state=42)
+        
+        if self.desired_model == 2:
+            trained_model = SVC(probability=True, random_state=42)
 
+        if self.desired_model == 3:
+            trained_model = RandomForestClassifier(n_estimators=100, random_state=42)
+
+        if self.desired_model == 4:
+            trained_model = self.LSTM('simulation')
             return trained_model
+
+        # Fit the model on the training data
+        trained_model.fit(X, y)
+
+        return trained_model
     
 
     # Test models on a train/test split to get model performance metrics
@@ -118,8 +123,6 @@ class Confidence_Probability:
 
         # y output to be labels column
         y = training_data['Label']
-
-        #X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
         # Determine the split index (80% training, 20% testing)
         split_index = int(len(training_data) * 0.8)
@@ -141,7 +144,7 @@ class Confidence_Probability:
             trained_model = RandomForestClassifier(n_estimators=100, random_state=42)
 
         if self.desired_model == 4:
-            self.LSTM()
+            self.LSTM('test')
             return 0
 
         # Fit the model on the training data
@@ -176,7 +179,7 @@ class Confidence_Probability:
     
 
     # LSTM Model as requires different architecture
-    def LSTM(self):
+    def LSTM(self, training_type):
 
         training_data = self.training_data_set
 
@@ -192,10 +195,11 @@ class Confidence_Probability:
         # Reshape input to [samples, time steps, features]
         X = X.reshape((X.shape[0], 1, X.shape[1]))
 
-        # Split the data into training and test sets (80-20 split)
-        split_index = int(len(training_data) * 0.8)
-        X_train, X_test = X[:split_index], X[split_index:]
-        y_train, y_test = y[:split_index], y[split_index:]
+        if training_type == 'test':
+            # Split the data into training and test sets (80-20 split)
+            split_index = int(len(training_data) * 0.8)
+            X_train, X_test = X[:split_index], X[split_index:]
+            y_train, y_test = y[:split_index], y[split_index:]
 
         # Define LSTM model
         model = Sequential()
@@ -205,6 +209,9 @@ class Confidence_Probability:
 
         # Train the model
         model.fit(X_train, y_train, epochs=100, batch_size=32, verbose=0)
+
+        if training_type == 'simulation':
+            return model
 
         # Predict probabilities on the test set
         y_proba = model.predict(X_test)
@@ -238,7 +245,12 @@ class Confidence_Probability:
         # Create test data frame using input parameters for prediction
         test_data_point = pd.DataFrame({'Close': [price], 'BB_upper': [BB_upper], 'BB_middle': [BB_middle], 'BB_lower': [BB_lower],
                                         'RSI': [RSI], 'ADX': [ADX], 'DI+': [DI_pos], 'DI-': [DI_neg], 'Volatility': [Volatility]})
-        rating = self.model.predict(test_data_point)
+        
+        rating = self.model.predict_proba(test_data_point)
+
+        # Extract probabilities for each class
+        prob_up = rating[:, 1]  # Probability of price going up (class +1)
+        prob_down = rating[:, 0]  # Probability of price going down (class -1)
 
         # return prediction value
-        return round(rating[0], 2)
+        return prob_up, prob_down
