@@ -12,6 +12,12 @@ def prepare_dataset(ticker, data_period, interval):
     # Retrieve dataset from yahoo finance api
     security_data = yf.download(ticker, interval=interval, period=data_period, progress=False)
 
+    """# Reset the index to convert the datetime index to a column
+    training_data = training_data.reset_index()
+
+    # Rename the new column to 'Datetime'
+    training_data = training_data.rename(columns={'index': 'Datetime'})"""
+
     # Add technical indicator values to the dataset
     dataset = pd.DataFrame(security_data)
 
@@ -35,6 +41,12 @@ def prepare_training_dataset(ticker, interval, training_range):
 
     # Get last 5 days of security data from api call
     training_data = yf.download(ticker, interval = interval, start=security_data[-6], end=security_data[-1], progress=False)
+
+    """# Reset the index to convert the datetime index to a column
+    training_data = training_data.reset_index()
+
+    # Rename the new column to 'Datetime'
+    training_data = training_data.rename(columns={'index': 'Datetime'})"""
 
     # Concatanate previous 5day ranges of security_data (due to API limit) for desired training range per 5 day range (i.e. 3 = 3weeks)
     if (training_range != 1):

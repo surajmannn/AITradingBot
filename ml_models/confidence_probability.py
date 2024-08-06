@@ -9,8 +9,6 @@ from sklearn.neural_network import MLPRegressor
 from ta_indicators.dataset_preparation import *
 import numpy as np
 
-""" INSERT OTHER MODELS HERE TOO AS PARAMETER """
-
 
 # This class creates machine learning model objects which provide probabilities for price moving in direction of signals
 class Confidence_Probability:
@@ -22,6 +20,7 @@ class Confidence_Probability:
         self.interval = interval                    # Desired chart interval (i.e, 1min, 5min)
         self.training_range = training_range        # Select amount of historic market weeks for training dataset
         self.desired_model = desired_model          # 1 for MLPRegressor, 2 for SVM, 3 for LSTM
+        self.training_data_set = None
         
         # Initialise an MLP Regressor model using input parameters
         #self.model = self.create_model()
@@ -57,11 +56,13 @@ class Confidence_Probability:
         # Remove last 30 rows as labels cannot be generated based on look ahead prices not exisiting
         training_data = training_data[:-30]
         
-        # Count the number of 1's and -1's
+        """# Count the number of 1's and -1's
         label_counts = training_data['Label'].value_counts()
-
         print("Number of 1's:", label_counts.get(1, 0))
-        print("Number of -1's:", label_counts.get(-1, 0))
+        print("Number of -1's:", label_counts.get(-1, 0))"""
+
+        # Add dataset to class variable
+        self.training_data_set = training_data
 
         # return the created model
         return training_data #trained_model
@@ -92,6 +93,16 @@ class Confidence_Probability:
                 trained_model = 0
 
             return trained_model
+    
+
+    # Test models on a train/test split to get model performance metrics
+    #... Different from live trading as the test set would be the actual running of the bot
+    #... Whereas the model here is tested based on class labels
+    def test_model(self):
+
+        training_data = self.training_data_set
+
+        return 0
     
 
     # Using the model, create confidence rating predictions

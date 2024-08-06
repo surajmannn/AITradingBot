@@ -28,7 +28,9 @@ def testing():
 
     # Check model training
     GBP = Confidence_Probability('GBPUSD=X', '1m', 2, 1)
-    print(GBP.create_training_data())
+    data = GBP.create_training_data()
+    #print(data.loc[data.index.month == 8])
+    print(data)
 
 
 if __name__ == "__main__":
