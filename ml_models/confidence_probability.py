@@ -4,9 +4,22 @@
 import warnings
 warnings.simplefilter(action='ignore')
 
+# Suppress TensorFlow logs
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 import pandas as pd
-from sklearn.neural_network import MLPRegressor
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.utils import to_categorical
+from sklearn.neural_network import MLPClassifier
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report, roc_auc_score
 from ta_indicators.dataset_preparation import *
+
 import numpy as np
 
 
@@ -15,12 +28,13 @@ class Confidence_Probability:
 
     # Initialise object with selected security, trading interval, 
     #... range of historic training data by weeks, and desired machine learning model as integers
-    def __init__(self, ticker, interval, training_range, desired_model):
+    def __init__(self, ticker, interval, training_range, desired_model, look_ahead_values):
         self.ticker = ticker                        # Security name
         self.interval = interval                    # Desired chart interval (i.e, 1min, 5min)
         self.training_range = training_range        # Select amount of historic market weeks for training dataset
         self.desired_model = desired_model          # 1 for MLPRegressor, 2 for SVM, 3 for LSTM
         self.training_data_set = None
+        self.look_ahead = look_ahead_values         # Array of +n price intervals for determining labelling
         
         # Initialise an MLP Regressor model using input parameters
         #self.model = self.create_model()
@@ -35,11 +49,8 @@ class Confidence_Probability:
         # Initialise class label column for training dataset
         training_data['Label'] =  0
 
-        # select look ahead time interval (Price at n amount of time after to determine price at that point)
-        look_ahead = [2,5,10,15,30]
-
         # Compute classifications for each row in the dataset using pandas vectorisation calculations
-        for period in look_ahead:
+        for period in self.look_ahead:
 
             # Use shift to get future prices at look_ahead periods
             future_prices = training_data['Close'].shift(-period)
@@ -82,7 +93,7 @@ class Confidence_Probability:
 
             if self.desired_model == 1:     
                 # Train the neural network
-                #trained_model = MLPRegressor(hidden_layer_sizes=(40,40), max_iter=1000, random_state=42)
+                #trained_model = MLPClassifier(hidden_layer_sizes=(40,40), max_iter=1000, random_state=42)
                 #trained_model.fit(X, y)
                 trained_model = 0
             
@@ -101,6 +112,120 @@ class Confidence_Probability:
     def test_model(self):
 
         training_data = self.training_data_set
+
+        # Define training data as all columns except labels columns
+        X = training_data.drop(columns=['Label'])
+
+        # y output to be labels column
+        y = training_data['Label']
+
+        #X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        # Determine the split index (80% training, 20% testing)
+        split_index = int(len(training_data) * 0.8)
+
+        # As the security data is timeseries, split based on past and future pricing
+        X_train = X.iloc[:split_index]
+        y_train = y.iloc[:split_index]
+        X_test = X.iloc[split_index:]
+        y_test = y.iloc[split_index:]
+
+        # Determine model
+        if self.desired_model == 1:
+            trained_model = MLPClassifier(hidden_layer_sizes=(100,100), max_iter=500, random_state=42)
+        
+        if self.desired_model == 2:
+            trained_model = SVC(probability=True, random_state=42)
+
+        if self.desired_model == 3:
+            trained_model = RandomForestClassifier(n_estimators=100, random_state=42)
+
+        if self.desired_model == 4:
+            self.LSTM()
+            return 0
+
+        # Fit the model on the training data
+        trained_model.fit(X_train, y_train)
+
+        # Predict probabilities on the test set
+        y_proba = trained_model.predict_proba(X_test)
+
+        # Extract probabilities for each class
+        prob_up = y_proba[:, 1]  # Probability of price going up (class +1)
+        prob_down = y_proba[:, 0]  # Probability of price going down (class -1)
+
+        # Predict class labels based on the higher probability
+        y_pred = np.where(prob_up > prob_down, 1, -1)
+
+        # Convert y_test to binary (0 and 1)
+        y_test_binary = (y_test + 1) // 2  # Converts -1 to 0 and 1 to 1
+
+        # Evaluate the model
+        accuracy = accuracy_score(y_test, y_pred)
+        print(f"Accuracy: {accuracy}")
+
+        # Print classification report
+        print("Classification Report:")
+        print(classification_report(y_test, y_pred))
+
+        # Compute ROC AUC score
+        roc_auc = roc_auc_score(y_test_binary, prob_up)  # Use prob_up for AUC calculation
+        print(f"ROC AUC Score: {roc_auc}")
+
+        return 0
+    
+
+    # LSTM Model as requires different architecture
+    def LSTM(self):
+
+        training_data = self.training_data_set
+
+        # Define training data as all columns except labels columns
+        X = training_data.drop(columns=['Label']).values
+
+        # y output to be labels column
+        y = training_data['Label'].values
+
+        # Convert target to categorical (for Keras)
+        y = to_categorical((y + 1) // 2)  # Converts -1 to 0 and 1 to 1
+
+        # Reshape input to [samples, time steps, features]
+        X = X.reshape((X.shape[0], 1, X.shape[1]))
+
+        # Split the data into training and test sets (80-20 split)
+        split_index = int(len(training_data) * 0.8)
+        X_train, X_test = X[:split_index], X[split_index:]
+        y_train, y_test = y[:split_index], y[split_index:]
+
+        # Define LSTM model
+        model = Sequential()
+        model.add(LSTM(50, input_shape=(X_train.shape[1], X_train.shape[2])))
+        model.add(Dense(2, activation='softmax'))
+        model.compile(optimizer=Adam(), loss='categorical_crossentropy', metrics=['accuracy'])
+
+        # Train the model
+        model.fit(X_train, y_train, epochs=100, batch_size=32, verbose=0)
+
+        # Predict probabilities on the test set
+        y_proba = model.predict(X_test)
+
+        # Extract probabilities for each class
+        prob_up = y_proba[:, 1]  # Probability of class +1
+        prob_down = y_proba[:, 0]  # Probability of class -1
+
+        # Predict class labels based on the higher probability
+        y_pred = np.where(prob_up > prob_down, 1, -1)
+
+        # Convert y_test back from categorical
+        y_test = np.argmax(y_test, axis=1) * 2 - 1  # Converts 0 to -1 and 1 to 1
+
+        # Evaluate the model
+        print("Classification Report:")
+        print(classification_report(y_test, y_pred))
+
+        # Compute ROC AUC score
+        roc_auc = roc_auc_score((y_test + 1) // 2, prob_up)  # Use prob_up for AUC calculation, adjust y_test
+        print(f"ROC AUC Score: {roc_auc}")
 
         return 0
     

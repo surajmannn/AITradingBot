@@ -27,10 +27,10 @@ def testing():
     #print(prepare_training_dataset('GBPUSD=X', '1m', 2))
 
     # Check model training
-    GBP = Confidence_Probability('GBPUSD=X', '1m', 2, 1)
+    GBP = Confidence_Probability('GBPUSD=X', '1m', 1, 4, [2,5,10,15,30])
     data = GBP.create_training_data()
     #print(data.loc[data.index.month == 8])
-    print(data)
+    GBP.test_model()
 
 
 if __name__ == "__main__":
