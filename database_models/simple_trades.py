@@ -25,12 +25,12 @@ def get_mla_trades(mla):
     return data
 
 def add_position(values):
-    # position = 1 if Buy and 2 if Sell
+    # position = 1 if Buy, -1 if Sell, 0 if close, and -2 if stoploss close
     query = (
         "INSERT INTO simple_trades ("
-        "userID, mla, ticker, position, quantity, stock_price, total_price, "
-        "RSI, BB_upper_band, BB_lower_band, ADX, DI_pos, DI_neg, confidence_rating"
-        ") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        "userID, ticker, ML_type, position_date, position, quantity, security_price, total_price, "
+        "BB_upper_band, BB_lower_band, RSI, ADX, DI_pos, DI_neg, volatility, confidence_probability"
+        ") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
     )
     data = run_alter_query(query, values)
     return data
