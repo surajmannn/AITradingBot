@@ -1,4 +1,6 @@
-""" Neural Network for producing confidence rating on security signals """
+""" This file produces probabilities of prices moving in the direction of the generated signals.
+    ... Taking the desired model choice, this file creates and trains the machine learning model as well as testing it,
+    ... which is used as the final decision basis on trade execution. """
 
 # remove pandas warnings
 import warnings
@@ -8,7 +10,11 @@ warnings.simplefilter(action='ignore')
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
+# Import libraries for datasets
 import pandas as pd
+import numpy as np
+
+# Import machine learning models and metrics from sklearn and tensorflow
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 from tensorflow.keras.optimizers import Adam
@@ -16,11 +22,10 @@ from tensorflow.keras.utils import to_categorical
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, roc_auc_score
-from ta_indicators.dataset_preparation import *
 
-import numpy as np
+# Import dataset preparation logic from indicators folder
+from ta_indicators.dataset_preparation import *
 
 
 # This class creates machine learning model objects which provide probabilities for price moving in direction of signals
