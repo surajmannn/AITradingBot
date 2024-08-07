@@ -10,7 +10,7 @@ from ta_indicators.rsi import *
 from technical_indicators.dmi_adx import *
 from ta_indicators.dmi_adx import *
 from ta_indicators.rsi import *
-from buy_and_sell import *
+from trading_system.buy_and_sell import *
 from ml_models.confidence_rating import *
 import time
 import yahoo_fin.stock_info as si

@@ -4,7 +4,7 @@
 from trading_system.buy_and_sell import *
 from ml_models.confidence_rating import *
 
-
+# This class generates signals depending on current values for technical indicators on the security data
 class Signal_Generation():
 
     # Class constructor with trading paramater inputs
