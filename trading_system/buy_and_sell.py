@@ -12,7 +12,6 @@ def buy(ticker, ml_type, position_date, security_price, BB_upper, BB_lower, rsi,
     data = add_position(values)     # database handler call
     return data
 
-
 # This function sends a sell execution into the database
 def sell(ticker, ml_type, position_date, security_price, BB_upper, BB_lower, rsi, adx, di_pos, di_neg, volatility, confidence_probability):
     userID = 1          # irrelevant for testing scenario
