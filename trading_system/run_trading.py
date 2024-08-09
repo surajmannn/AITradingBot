@@ -14,7 +14,7 @@ def run_trading_simulation(ticker, trading_range, data_period, interval):
     trading_dataset = prepare_dataset(ticker=ticker, data_period=data_period, interval=interval)
 
     # Create desired model for training on historic ticker data
-    ml_model = Confidence_Probability(ticker=ticker, interval=interval, training_range=1, desired_model=1, look_ahead_values=[2,5,10,15,30])
+    ml_model = Confidence_Probability(ticker=ticker, interval=interval, training_range=1, desired_model=4, look_ahead_values=[2,5,10,15,30])
 
     # Test the model for performance metrics
     ml_model.test_model()

@@ -200,11 +200,17 @@ class Confidence_Probability:
         # Reshape input to [samples, time steps, features]
         X = X.reshape((X.shape[0], 1, X.shape[1]))
 
+        # If the model is for test, create train test split for performance metrics
         if training_type == 'test':
             # Split the data into training and test sets (80-20 split)
             split_index = int(len(training_data) * 0.8)
             X_train, X_test = X[:split_index], X[split_index:]
             y_train, y_test = y[:split_index], y[split_index:]
+
+        # Otherwise, just use the whole dataset as training data, as trading data simulation is the test set
+        else:
+            X_train = X
+            y_train = y
 
         # Define LSTM model
         model = Sequential()
@@ -215,6 +221,7 @@ class Confidence_Probability:
         # Train the model
         model.fit(X_train, y_train, epochs=100, batch_size=32, verbose=0)
 
+        # If the model is for simulation, there is not train test split so return the model
         if training_type == 'simulation':
             return model
 
@@ -251,7 +258,14 @@ class Confidence_Probability:
         test_data_point = pd.DataFrame({'Close': [price], 'BB_upper': [BB_upper], 'BB_middle': [BB_middle], 'BB_lower': [BB_lower],
                                         'RSI': [RSI], 'ADX': [ADX], 'DI+': [DI_pos], 'DI-': [DI_neg], 'Volatility': [Volatility]})
         
-        rating = self.model.predict_proba(test_data_point)
+        # If LSTM model, requires different formatting than the other 3 models for getting prediction probability
+        #... as requires reshape for test input
+        if self.desired_model == 4:
+            test_data_point = test_data_point.values
+            test_data_point = test_data_point.reshape((test_data_point.shape[0], 1, test_data_point.shape[1]))
+            rating = self.model.predict(test_data_point)
+        else:
+            rating = self.model.predict_proba(test_data_point)
 
         # Extract probabilities for each class
         prob_up = rating[:, 1]  # Probability of price going up (class +1)

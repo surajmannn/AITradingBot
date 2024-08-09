@@ -18,6 +18,7 @@ class Signal_Generation():
 
     def signal_generation(self, security_data):
         # Create variables using the data from the dataset
+        """ CAN REMOVE THIS FORMAT AND TAKE VALUES AS ALRADY DONE IN RUN_TRADING ON FUNCTION CALL """
         current_price = security_data.Close
         BB_upper = security_data.BB_upper
         BB_middle = security_data.BB_middle
