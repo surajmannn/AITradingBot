@@ -36,7 +36,7 @@ class Confidence_Probability:
     def __init__(self, ticker, interval, training_range, desired_model, look_ahead_values):
         self.ticker = ticker                        # Security name
         self.interval = interval                    # Desired chart interval (i.e, 1min, 5min)
-        self.training_range = training_range        # Select amount of historic market weeks for training dataset
+        self.training_range = training_range        # Select amount of historic market weeks for training dataset (e.g. 1, 2, 3)
         self.desired_model = desired_model          # 1 for MLPRegressor, 2 for SVM, 3 for Random Forest, 4 for LSTM
         self.training_data_set = None
         self.look_ahead = look_ahead_values         # Array of +n price intervals for determining labelling

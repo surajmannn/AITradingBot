@@ -18,29 +18,27 @@ class Signal_Generation():
 
     def signal_generation(self, security_data):
         # Create variables using the data from the dataset
-        current_price = security_data['Close']
-        BB_upper = security_data['BB_upper']
-        BB_middle = security_data['BB_middle']
-        BB_lower = security_data['BB_lower']
-        rsi = security_data['RSI']
-        adx = security_data['adx']
-        DI_pos = security_data['DI+']
-        DI_neg = security_data['DI-']
-        volatility = security_data['Volatility']
+        current_price = security_data.Close
+        BB_upper = security_data.BB_upper
+        BB_middle = security_data.BB_middle
+        BB_lower = security_data.BB_lower
+        rsi = security_data.RSI
+        adx = security_data.ADX
+        DI_pos = security_data._7
+        DI_neg = security_data._8
+        volatility = security_data.Volatility
 
         # Check data for buy signal generation
-        buy_signal = self.buy_signal()
-        short_signal = self.short_signal()
+        buy_signal = self.buy_signal(current_price, BB_lower, rsi, adx, volatility)
+        short_signal = self.short_signal(current_price, BB_upper, rsi, adx, volatility)
 
         if buy_signal:
-            prob_up, prob_down = Confidence_Rating.confidence_rating(current_price, BB_upper, BB_middle, BB_lower, rsi, adx, DI_pos, DI_neg, volatility)
-            if prob_up > 0.5:
-                return 1
+            print("Buy Signal Generated!")
+            return 1
             
         if short_signal:
-            prob_up, prob_down = Confidence_Rating.confidence_rating(current_price, BB_upper, BB_middle, BB_lower, rsi, adx, DI_pos, DI_neg, volatility)
-            if prob_down > 0.5:
-                return -1
+            print("Short Signal Generated!")
+            return -1
             
         return 0
     
@@ -67,24 +65,33 @@ class Signal_Generation():
     #...type is 1 if a buy position and -1 for a short position
     def close_position(self, security_data, position_type):
         # Create variables using the data from the dataset
-        current_price = security_data['Close']
+        """current_price = security_data['Close']
         BB_upper = security_data['BB_upper']
         BB_middle = security_data['BB_middle']
         BB_lower = security_data['BB_lower']
         rsi = security_data['RSI']
-        adx = security_data['adx']
+        adx = security_data['ADX']
         DI_pos = security_data['DI+']
         DI_neg = security_data['DI-']
-        volatility = security_data['Volatility']
+        volatility = security_data['Volatility']"""
+        current_price = security_data.Close
+        BB_upper = security_data.BB_upper
+        BB_middle = security_data.BB_middle
+        BB_lower = security_data.BB_lower
+        rsi = security_data.RSI
+        adx = security_data.ADX
+        DI_pos = security_data._7
+        DI_neg = security_data._8
+        volatility = security_data.Volatility
 
         # Buy position
         if position_type == 1:
-            if (rsi > 50 and adx < 25):       # adx > 25 indicates a strong trend which means it may be better to hold
+            if (rsi > 55 and adx < 25):       # adx > 25 indicates a strong trend which means it may be better to hold
                 return True
         
         # Short position
         if position_type == -1:
-            if (rsi < 50 and adx < 25):       # adx > 25 indicates a strong trend which means it may be better to hold
+            if (rsi < 45 and adx < 25):       # adx > 25 indicates a strong trend which means it may be better to hold
                 return True
 
         return False

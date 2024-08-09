@@ -6,7 +6,7 @@ from ta_indicators.rsi import *
 import pandas as pd
 import yfinance as yf
 
-# Takes security, desired dataset period, and desired trading interval (i.e, 1m, 5m) as input
+# Takes security, desired dataset period (1d, 5d), and desired trading interval (i.e, 1m, 5m) as input
 def prepare_dataset(ticker, data_period, interval):
 
     # Retrieve dataset from yahoo finance api
@@ -27,7 +27,8 @@ def prepare_dataset(ticker, data_period, interval):
     dataset = dmi_adx(dataset)
 
     # Drop uneeded columns
-    dataset.drop(['High', 'Close', 'Open', 'Adj Close', 'Volume'], axis=1, inplace = True)
+    dataset.drop(['High', 'Low', 'Open', 'Adj Close', 'Volume'], axis=1, inplace = True)
+    dataset = dataset.dropna()
 
     #print(dataset)
 

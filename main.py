@@ -3,6 +3,7 @@
 from signals_handler import Signal_Handler
 from ml_models.confidence_probability import *
 from ta_indicators.dataset_preparation import *
+from trading_system.run_trading import *
 
 def main():
 
@@ -27,10 +28,14 @@ def testing():
     #print(prepare_training_dataset('GBPUSD=X', '1m', 2))
 
     # Check model training
-    GBP = Confidence_Probability('GBPUSD=X', '1m', 1, 4, [2,5,10,15,30])
-    data = GBP.create_training_data()
+    #GBP = Confidence_Probability('GBPUSD=X', '1m', 1, 4, [2,5,10,15,30])
+    #data = GBP.create_training_data()
     #print(data.loc[data.index.month == 8])
-    GBP.test_model()
+    #GBP.test_model()
+
+    balance = run_trading_simulation('GBPUSD=X', trading_range=1, data_period='5d', interval='1m')
+    print("\nFinal Balance: ", balance)
+
 
 
 if __name__ == "__main__":
