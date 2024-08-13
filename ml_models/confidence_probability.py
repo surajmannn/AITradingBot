@@ -33,16 +33,22 @@ class Confidence_Probability:
 
     # Initialise object with selected security, trading interval, 
     #... range of historic training data by weeks, and desired machine learning model as integers
-    def __init__(self, ticker, interval, training_range, desired_model, look_ahead_values):
+    def __init__(self, ticker, interval, training_range, desired_model, look_ahead_values, dataset):
         self.ticker = ticker                        # Security name
         self.interval = interval                    # Desired chart interval (i.e, 1min, 5min)
         self.training_range = training_range        # Select amount of historic market weeks for training dataset (e.g. 1, 2, 3)
         self.desired_model = desired_model          # 1 for MLPRegressor, 2 for SVM, 3 for Random Forest, 4 for LSTM
         self.training_data_set = None
         self.look_ahead = look_ahead_values         # Array of +n price intervals for determining labelling
+        self.dataset = dataset                      # Dataset to be used for training
         
         # Initialise and train the model on class construction
         self.model = self.create_model()
+
+    
+    # Updates the current training data set
+    def update_training_data(self, new_training_data):
+        self.training_data_set = new_training_data
 
     
     # Build the model from the object initialisation 

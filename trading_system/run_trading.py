@@ -19,22 +19,18 @@ def get_training_start_date(start_date, training_range):
 # Runs the trading simulation environment
 def run_trading_simulation(ticker, start_date, end_date, training_range, data_period, interval):
 
-    # Retrieves a list of all forex trading days within the desired simulation range
-    trading_dates = prepare_simulation_range_date_list(ticker, start_date=start_date, end_date=end_date)
+    dataset = prepare_entire_dataset(ticker, interval)
+    print(dataset)
 
-    # Gets the first date for the training dataset (function call)
-    training_start_date = get_training_start_date(start_date=start_date, training_range=training_range)
-
-    print(training_start_date)
-
-    
     return 0
 
-    # Call to dataset preparation function using ticker, data period (e.g. 1d, 5d), trading interval (e.g. 1m, 5m)   
-    trading_dataset = prepare_dataset(ticker=ticker, data_period=data_period, interval=interval)
+    # Creates dataset with technical indicator values for up to max of 30days historical data (API limitation)
+    trading_dataset = prepare_dataset(ticker, start_date, end_date, data_period, interval)
+
+    print(trading_dataset)
 
     # Create desired model for training on historic ticker data
-    ml_model = Confidence_Probability(ticker=ticker, interval=interval, training_range=1, desired_model=1, look_ahead_values=[2,5,10,15,30])
+    ml_model = Confidence_Probability(ticker=ticker, interval=interval, training_range=3, desired_model=1, look_ahead_values=[2,5,10,15,30], dataset=trading_dataset)
 
     # Test the model for performance metrics
     ml_model.test_model()
@@ -46,6 +42,8 @@ def run_trading_simulation(ticker, start_date, end_date, training_range, data_pe
     balance = 1000
     entry_price = 0
     lot_size = 0
+
+    return 0
 
     for row in trading_dataset.itertuples(index=True, name='Pandas'):
 

@@ -6,11 +6,39 @@ from ta_indicators.rsi import *
 import pandas as pd
 import yfinance as yf
 
+# Takes security, and gets the maximum amount of historical data (1m interval = 30d as per api limit)
+def prepare_entire_dataset(ticker, interval):
+
+    # Get list of valid market days from the last month
+    dates_list = get_dates_list(ticker)
+
+    # Get the oldest day of security data
+    security_data = yf.download(ticker, interval = interval, start=dates_list[0], end=dates_list[1], progress=False)
+
+    # Concatanate each following day to the current security data set until the most recent day
+    for x in range(1, len(dates_list)-1):
+        data_period = yf.download(ticker, interval = interval, start=dates_list[x], end=dates_list[x+1], progress=False)
+        security_data = pd.concat([security_data, data_period])
+
+    # Append technical indicator values to the dataset by calling the functions
+    security_data = bollinger_bands(security_data)
+    security_data = rsi(security_data)
+    security_data = dmi_adx(security_data)
+
+    # Drop uneeded columns
+    security_data.drop(['High', 'Low', 'Open', 'Adj Close', 'Volume'], axis=1, inplace = True)
+
+    # After applying the technical indicators the first n intervals for the lookback periods of technical analaysis will not have values so dropped
+    security_data = security_data.dropna()
+
+    return security_data
+
+
 # Takes security, desired dataset period (1d, 5d), and desired trading interval (i.e, 1m, 5m) as input
-def prepare_dataset(ticker, data_period, interval):
+def prepare_dataset(ticker, start_date, end_date, data_period, interval):
 
     # Retrieve dataset from yahoo finance api
-    security_data = yf.download(ticker, interval=interval, period=data_period, progress=False)
+    security_data = yf.download(ticker, period=data_period, interval=interval, progress=False)
 
     """# Reset the index to convert the datetime index to a column
     training_data = training_data.reset_index()
@@ -19,20 +47,18 @@ def prepare_dataset(ticker, data_period, interval):
     training_data = training_data.rename(columns={'index': 'Datetime'})"""
 
     # Add technical indicator values to the dataset
-    dataset = pd.DataFrame(security_data)
+    security_data = pd.DataFrame(security_data)
 
     # Append technical indicator values to the dataset by calling the functions
-    dataset = bollinger_bands(dataset)
-    dataset = rsi(dataset)
-    dataset = dmi_adx(dataset)
+    security_data = bollinger_bands(security_data)
+    security_data = rsi(security_data)
+    dataset = dmi_adx(security_data)
 
     # Drop uneeded columns
-    dataset.drop(['High', 'Low', 'Open', 'Adj Close', 'Volume'], axis=1, inplace = True)
-    dataset = dataset.dropna()
+    security_data.drop(['High', 'Low', 'Open', 'Adj Close', 'Volume'], axis=1, inplace = True)
+    security_data = security_data.dropna()
 
-    #print(dataset)
-
-    return dataset
+    return security_data
 
 
 # Yahoo finance API has 5d limit for historical '1m' interval data so this function 
@@ -41,18 +67,12 @@ def prepare_training_dataset(ticker, interval, training_range):
     security_data = get_dates_list(ticker)
 
     # Get last 5 days of security data from api call
-    training_data = yf.download(ticker, interval = interval, start=security_data[-6], end=security_data[-1], progress=False)
-
-    """# Reset the index to convert the datetime index to a column
-    training_data = training_data.reset_index()
-
-    # Rename the new column to 'Datetime'
-    training_data = training_data.rename(columns={'index': 'Datetime'})"""
+    training_data = yf.download(ticker, interval = interval, start=security_data[-10], end=security_data[-5], progress=False)
 
     # Concatanate previous 5day ranges of security_data (due to API limit) for desired training range per 5 day range (i.e. 3 = 3weeks)
     if (training_range != 1):
         for x in range(1, min(3,training_range)):
-            data_period = yf.download(ticker, interval = interval, start=security_data[-6-(x*5)], end=security_data[-1-(x*5)], progress=False)
+            data_period = yf.download(ticker, interval = interval, start=security_data[-10-(x*5)], end=security_data[-5-(x*5)], progress=False)
             training_data = pd.concat([data_period, training_data])
 
     # Append technical indicator values to the dataset by calling the functions
@@ -65,7 +85,6 @@ def prepare_training_dataset(ticker, interval, training_range):
 
     # After applying the technical indicators the first n intervals for the lookback periods of technical analaysis will not have values so dropped
     training_data = training_data.dropna()
-    #print(training_data)
 
     return training_data
 

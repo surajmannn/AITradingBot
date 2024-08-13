@@ -4,6 +4,9 @@ from ml_models.confidence_probability import *
 from ta_indicators.dataset_preparation import *
 from trading_system.run_trading import *
 
+from alpha_vantage.foreignexchange import ForeignExchange
+import pandas as pd
+
 def main():
 
     """ CREATE OBJECTS FROM CLASS
@@ -26,7 +29,6 @@ def testing():
 
     balance = run_trading_simulation(ticker='GBPUSD=X', start_date='2024-07-01', end_date='2024-08-12', training_range=1, data_period='5d', interval='1m')
     print("\nFinal Balance: ", balance)
-
 
 
 if __name__ == "__main__":
