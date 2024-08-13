@@ -1,13 +1,10 @@
 """ Creates trading signals based on the technical indicator strategy to determine if a position should be taken on the forex pair """
 
-# import relevant file functionality from other folders
-from trading_system.buy_and_sell import *
-from ml_models.confidence_rating import *
-
-# This class generates signals depending on current values for technical indicators on the security data
+# This class generates signals depending on current values of the security data, 
+#...which implements the day trading strategy using technical indicators and price
 class Signal_Generation():
 
-    # Class constructor with trading paramater inputs
+    # Class constructor with trading paramater input conditions
     def __init__(self, rsi_oversold_level, rsi_overbought_level, adx_extreme_value, volatility_range, stoploss_range):
         self.rsi_oversold_level = rsi_oversold_level        # RSI oversold level (Usually 30)
         self.rsi_overbought_level = rsi_overbought_level    # RSI overbought level (Usually 70)
@@ -16,6 +13,7 @@ class Signal_Generation():
         self.stoploss_range = stoploss_range                # Percentage stop loss for positions (absolute value)
 
 
+    # This function generates buy or short signals given current data interval
     def signal_generation(self, security_data):
         # Create variables using the data from the dataset
         """ CAN REMOVE THIS FORMAT AND TAKE VALUES AS ALRADY DONE IN RUN_TRADING ON FUNCTION CALL """
@@ -29,37 +27,40 @@ class Signal_Generation():
         DI_neg = security_data._8
         volatility = security_data.Volatility
 
-        # Check data for buy signal generation
+        # Check data for buy or short condition (function calls)
         buy_signal = self.buy_signal(current_price, BB_lower, rsi, adx, volatility)
         short_signal = self.short_signal(current_price, BB_upper, rsi, adx, volatility)
 
+        # If buy signal generated return 1 (indicating buy)
         if buy_signal:
             print("Buy Signal Generated!")
             return 1
             
+        # If short signal generated return -1 (indicating short)
         if short_signal:
             print("Short Signal Generated!")
             return -1
-            
+        
+        # Otherwise return 0 as no signal generated
         return 0
     
 
     # Buy signal generation
     def buy_signal(self, current_price, BB_lower, rsi, adx, volatility):
-        # Check current values for buy signal generation
+        # Check current values for buy signal generation, return True if satisfied
         if (BB_lower < current_price and rsi < self.rsi_oversold_level and volatility > self.volatility_range and adx < self.adx_extreme_value):
             return True
-        
-        return False
+
+        return False    # Return False as no signal present
     
 
     # Short signal generation
     def short_signal(self, current_price, BB_upper, rsi, adx, volatility):
-        # Check current values for buy signal generation
+        # Check current values for short signal generation
         if (BB_upper > current_price and rsi > self.rsi_overbought_level and volatility > self.volatility_range and adx < self.adx_extreme_value):
             return True
         
-        return False
+        return False    # Return False as no signal present
     
 
     # If position is open, checks criteria for closing or continuing to hold due to trend strength

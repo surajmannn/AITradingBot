@@ -6,14 +6,28 @@ from trading_system.buy_and_sell import *
 from ml_models.confidence_probability import *
 import time
 import yahoo_fin.stock_info as si
+from datetime import datetime, timedelta
+
+# Retrieves the first datetime for the training dataset which should be 7*training range behind the inputted start_date
+def get_training_start_date(start_date, training_range):
+    # Convert input start date to datetime
+    training_start_date = (datetime.strptime(start_date, '%Y-%m-%d') - timedelta(days=7 * training_range)).date()
+
+    return training_start_date
 
 
+# Runs the trading simulation environment
 def run_trading_simulation(ticker, start_date, end_date, training_range, data_period, interval):
 
     # Retrieves a list of all forex trading days within the desired simulation range
     trading_dates = prepare_simulation_range_date_list(ticker, start_date=start_date, end_date=end_date)
 
-    print(trading_dates)
+    # Gets the first date for the training dataset (function call)
+    training_start_date = get_training_start_date(start_date=start_date, training_range=training_range)
+
+    print(training_start_date)
+
+    
     return 0
 
     # Call to dataset preparation function using ticker, data period (e.g. 1d, 5d), trading interval (e.g. 1m, 5m)   
