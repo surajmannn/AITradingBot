@@ -40,12 +40,6 @@ def prepare_dataset(ticker, start_date, end_date, data_period, interval):
     # Retrieve dataset from yahoo finance api
     security_data = yf.download(ticker, period=data_period, interval=interval, progress=False)
 
-    """# Reset the index to convert the datetime index to a column
-    training_data = training_data.reset_index()
-
-    # Rename the new column to 'Datetime'
-    training_data = training_data.rename(columns={'index': 'Datetime'})"""
-
     # Add technical indicator values to the dataset
     security_data = pd.DataFrame(security_data)
 

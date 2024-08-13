@@ -19,21 +19,22 @@ def get_training_start_date(start_date, training_range):
 # Runs the trading simulation environment
 def run_trading_simulation(ticker, start_date, end_date, training_range, data_period, interval):
 
-    dataset = prepare_entire_dataset(ticker, interval)
-    print(dataset)
-
-    return 0
-
     # Creates dataset with technical indicator values for up to max of 30days historical data (API limitation)
-    trading_dataset = prepare_dataset(ticker, start_date, end_date, data_period, interval)
-
-    print(trading_dataset)
+    trading_dataset = prepare_entire_dataset(ticker, interval)
 
     # Create desired model for training on historic ticker data
-    ml_model = Confidence_Probability(ticker=ticker, interval=interval, training_range=3, desired_model=1, look_ahead_values=[2,5,10,15,30], dataset=trading_dataset)
+    ml_model = Confidence_Probability(ticker=ticker, interval=interval, training_range=1, desired_model=1, look_ahead_values=[2,5,10,15,30], dataset=trading_dataset)
 
     # Test the model for performance metrics
     ml_model.test_model()
+
+    current_training_data = ml_model.dataset
+
+    print(current_training_data)
+
+    return 0
+
+    ml_model.create_model()
 
     # Create signalling object for trading signalling
     signaller = Signal_Generation(rsi_oversold_level=30, rsi_overbought_level=70, adx_extreme_value=40, volatility_range=10, stoploss_range=2)
@@ -42,8 +43,6 @@ def run_trading_simulation(ticker, start_date, end_date, training_range, data_pe
     balance = 1000
     entry_price = 0
     lot_size = 0
-
-    return 0
 
     for row in trading_dataset.itertuples(index=True, name='Pandas'):
 

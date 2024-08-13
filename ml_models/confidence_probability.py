@@ -38,24 +38,24 @@ class Confidence_Probability:
         self.interval = interval                    # Desired chart interval (i.e, 1min, 5min)
         self.training_range = training_range        # Select amount of historic market weeks for training dataset (e.g. 1, 2, 3)
         self.desired_model = desired_model          # 1 for MLPRegressor, 2 for SVM, 3 for Random Forest, 4 for LSTM
-        self.training_data_set = None
+        self.current_training_set = None
         self.look_ahead = look_ahead_values         # Array of +n price intervals for determining labelling
-        self.dataset = dataset                      # Dataset to be used for training
+        self.dataset = dataset                      # Dataset to be used for trainin
+        self.model = None                           # initialise empty model
         
-        # Initialise and train the model on class construction
-        self.model = self.create_model()
+        # Update the dataset to contain classification labels
+        self.dataset = self.create_training_data()
 
     
     # Updates the current training data set
     def update_training_data(self, new_training_data):
-        self.training_data_set = new_training_data
+        self.current_training_set = new_training_data
 
     
     # Build the model from the object initialisation 
     def create_training_data(self):
 
-        # Fetch data from yf API as not available through Alpha Vantage API
-        training_data = prepare_training_dataset(self.ticker, self.interval, self.training_range)
+        training_data = self.dataset
 
         # Initialise class label column for training dataset
         training_data['Label'] =  0
@@ -83,8 +83,8 @@ class Confidence_Probability:
         print("Number of 1's:", label_counts.get(1, 0))
         print("Number of -1's:", label_counts.get(-1, 0))"""
 
-        # Add dataset to class variable
-        self.training_data_set = training_data
+        # Update training data set
+        self.dataset = training_data
 
         # return the created model
         return training_data #trained_model
@@ -93,8 +93,7 @@ class Confidence_Probability:
     # This function creates and trains the machine learning models based on the desired model
     def create_model(self):
 
-        # Obtain the training data for model training
-        training_data = self.create_training_data()
+        training_data = self.current_training_set
 
         # Define training data as all columns except labels columns
         X = training_data.drop(columns=['Label'])
@@ -119,6 +118,9 @@ class Confidence_Probability:
         # Fit the model on the training data
         trained_model.fit(X, y)
 
+        # Update class variable
+        self.model = trained_model
+
         return trained_model
     
 
@@ -127,7 +129,7 @@ class Confidence_Probability:
     #... Whereas the model here is tested based on class labels
     def test_model(self):
 
-        training_data = self.training_data_set
+        training_data = self.dataset
 
         # Define training data as all columns except labels columns
         X = training_data.drop(columns=['Label'])
@@ -192,7 +194,7 @@ class Confidence_Probability:
     # LSTM Model as requires different architecture
     def LSTM(self, training_type):
 
-        training_data = self.training_data_set
+        training_data = self.current_training_set
 
         # Define training data as all columns except labels columns
         X = training_data.drop(columns=['Label']).values
