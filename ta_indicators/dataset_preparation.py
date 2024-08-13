@@ -82,5 +82,13 @@ def get_dates_list(ticker):
     return security_data
 
 
-#prepare_dataset('GBPUSD=X', '5d', '1m')
-#print(prepare_training_dataset('GBPUSD=X', '1m', 2))
+# This retrieves a list of market days for the desired security data on the inputted trading range
+#... e.g. start_date=2024-01-01, end_date=2024-08-09
+def prepare_simulation_range_date_list(ticker, start_date, end_date):
+    # Retrieve dataset from yahoo finance api
+    security_data = pd.DataFrame(yf.download(ticker, start=start_date, end=end_date, interval='1d', progress=False))
+    
+    # Creates a data frame which contains trading range dates in api call format
+    security_data = security_data.index
+
+    return security_data
