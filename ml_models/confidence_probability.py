@@ -38,7 +38,7 @@ class Confidence_Probability:
         self.interval = interval                    # Desired chart interval (i.e, 1min, 5min)
         self.training_range = training_range        # Select amount of historic market weeks for training dataset (e.g. 1, 2, 3)
         self.desired_model = desired_model          # 1 for MLPRegressor, 2 for SVM, 3 for Random Forest, 4 for LSTM
-        self.current_training_set = None
+        self.current_training_set = None            # Intialise empty training dataset
         self.look_ahead = look_ahead_values         # Array of +n price intervals for determining labelling
         self.dataset = dataset                      # Dataset to be used for trainin
         self.model = None                           # initialise empty model

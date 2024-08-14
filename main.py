@@ -18,17 +18,19 @@ def main():
 
 def testing():
 
-    # Check dataset in prepare data
-    #print(prepare_training_dataset('GBPUSD=X', '1m', 2))
-
-    # Check model training
-    #GBP = Confidence_Probability('GBPUSD=X', '1m', 1, 4, [2,5,10,15,30])
-    #data = GBP.create_training_data()
-    #print(data.loc[data.index.month == 8])
-    #GBP.test_model()
-
-    # MAX SIMULATION RANGE IS 17
-    balance = run_trading_simulation(ticker='GBPUSD=X', desired_model=1, start_date='2024-07-01', end_date='2024-08-12', training_range=1, simulation_range=5, data_period='5d', interval='1m')
+    # Call to run the simulation
+    GBPUSD = Run_Trading(
+            ticker='GBPUSD=X',            # The ticker symbol for the currency pair
+            data_period='5d',             # The period of data to be used (5days by default)
+            interval='1m',                # The trading interval (1minute required for now)
+            confidence_level=0.5,         # Confidence level for the machine learning probability (trade execution)
+            desired_model=1,              # The specific model to use for simulation (1=MLP, 2=SVM, 3=RF, 4=LSTM)
+            start_date='2024-07-01',      # The start date for the simulation
+            end_date='2024-08-12',        # The end date for the simulation
+            training_range=1,             # The range of training data in days
+            simulation_range=5            # The range of the simulation in days (maximum 17)
+    )
+    balance = GBPUSD.run_trading_simulation()
     print("\nFinal Balance: ", balance)
 
 
