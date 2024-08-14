@@ -44,12 +44,13 @@ class Confidence_Probability:
         self.model = None                           # initialise empty model
         
         # Update the dataset to contain classification labels
-        self.dataset = self.create_training_data()
+        self.current_training_set = self.create_training_data()
 
     
     # Updates the current training data set
     def update_training_data(self, new_training_data):
-        self.current_training_set = new_training_data
+        self.dataset = new_training_data
+        self.create_training_data()
 
     
     # Build the model from the object initialisation 
@@ -84,7 +85,7 @@ class Confidence_Probability:
         print("Number of -1's:", label_counts.get(-1, 0))"""
 
         # Update training data set
-        self.dataset = training_data
+        self.current_training_set = training_data
 
         # return the created model
         return training_data #trained_model
@@ -129,7 +130,7 @@ class Confidence_Probability:
     #... Whereas the model here is tested based on class labels
     def test_model(self):
 
-        training_data = self.dataset
+        training_data = self.current_training_set
 
         # Define training data as all columns except labels columns
         X = training_data.drop(columns=['Label'])

@@ -16,23 +16,51 @@ def get_training_start_date(start_date, training_range):
     return training_start_date
 
 
-# Runs the trading simulation environment
-def run_trading_simulation(ticker, start_date, end_date, training_range, data_period, interval):
+# Obtains the initial starting index for the simulation
+#... Max simulation is 17days (inidicated by 3 weeks), otherwise start index current day subtracted by 5d trading week range
+def starting_index(simulation_range, trading_days):
+    if simulation_range == 3:
+        start_index = 6
+    else:
+        start_index = trading_days - ((simulation_range*5))
+    return start_index
 
-    # Creates dataset with technical indicator values for up to max of 30days historical data (API limitation)
-    trading_dataset = prepare_entire_dataset(ticker, interval)
+
+# Prepare initial training dataset based on desired simulation range
+def get_initial_training_data(ticker, simulation_range, data_period, interval):
+    initial_training_data = 0
+    return initial_training_data
+
+
+# Runs the trading simulation environment
+def run_trading_simulation(ticker, desired_model, start_date, end_date, training_range, simulation_range, data_period, interval):
+
+    # Get list of the valid open forex trading days 
+    trading_days = get_dates_list(ticker)
+    print(trading_days)
+
+    # Obtain starting index for simulation
+    start_index = starting_index(simulation_range, len(trading_days))
+
+    if simulation_range < 3:
+        print("\nCURRENT TRAINING RANGE: ", trading_days[-5-(simulation_range*5)], " TO ", trading_days[-(simulation_range*5)], "\n")
+        initial_training_data = prepare_dataset(ticker=ticker, start_date=trading_days[-5-(simulation_range*5)], end_date=trading_days[-(simulation_range*5)], 
+                                                data_period=data_period, interval=interval)
+    elif simulation_range == 3:
+        print("\nCURRENT TRAINING RANGE: ", trading_days[-7-(simulation_range*5)], " TO ", trading_days[-2-(simulation_range*5)], "\n")
+        # Get initial training data which should be 5 trading days of data prior to the starting day of the simulation
+        initial_training_data = prepare_dataset(ticker=ticker, start_date=trading_days[-7-(simulation_range*5)], end_date=trading_days[-2-(simulation_range*5)], 
+                                                data_period=data_period, interval=interval)
+    else:
+        print("Desired simulation range out of API range!")
+        return 0
+    
 
     # Create desired model for training on historic ticker data
-    ml_model = Confidence_Probability(ticker=ticker, interval=interval, training_range=1, desired_model=1, look_ahead_values=[2,5,10,15,30], dataset=trading_dataset)
+    ml_model = Confidence_Probability(ticker=ticker, interval=interval, training_range=1, desired_model=desired_model, look_ahead_values=[2,5,10,15,30], dataset=initial_training_data)
 
     # Test the model for performance metrics
     ml_model.test_model()
-
-    current_training_data = ml_model.dataset
-
-    print(current_training_data)
-
-    return 0
 
     ml_model.create_model()
 
@@ -43,65 +71,72 @@ def run_trading_simulation(ticker, start_date, end_date, training_range, data_pe
     balance = 1000
     entry_price = 0
     lot_size = 0
+    retrain = True
 
-    for row in trading_dataset.itertuples(index=True, name='Pandas'):
+    for x in range(start_index, len(trading_days)):
 
-        current_price = row.Close
-        BB_upper = row.BB_upper
-        BB_middle = row.BB_middle
-        BB_lower = row.BB_lower
-        rsi = row.RSI
-        adx = row.ADX
-        DI_pos = row._7
-        DI_neg = row._8
-        volatility = row.Volatility
-
-        #print("\nCurrent Time: ", row.Index)
-        #print(row)
-
-        if position != 0:
-            if signaller.close_position(security_data=row, position_type=position):
-                if position == 1:
-                    balance += (lot_size*current_price - 500)*30
-                if position == -1:
-                    balance += (500 - current_price*lot_size)*30
-                position = 0
-                entry_price = 0
-                lot_size = 0
-                print("Position Closed at: ", current_price)
-
+        print("\nCURRENT TRADING DAY: ", trading_days[x], "\n")
+        if x == len(trading_days)-1:
+            current_trading_day_data = get_current_days_data(ticker, interval)
+            retrain = False
         else:
-            if position == 0:
-                # Check current minute data for signal
-                signal = signaller.signal_generation(security_data=row)
-                if signal != 0:
-                    prob_up, prob_down = ml_model.confidence_rating(current_price, BB_upper, BB_middle, BB_lower, rsi, adx, DI_pos, DI_neg, volatility)
-                    if signal == 1:
-                        print("Confidence Probability: ", prob_up)
-                    if prob_up > 0.5:
-                        print("Bought at: ", current_price)  
-                        position = signal
-                        entry_price = current_price
-                        lot_size = 500/entry_price
-            
-                    if signal == -1:
-                        print("Confidence Probability: ", prob_down)
-                        if prob_down > 0.5:
-                            print("Shorted at: ", current_price)
+            current_trading_day_data = prepare_dataset(ticker=ticker, start_date=trading_days[x], end_date=trading_days[x+1], data_period='1d', interval=interval)
+
+        for row in current_trading_day_data.itertuples(index=True, name='Pandas'):
+
+            current_price = row.Close
+            BB_upper = row.BB_upper
+            BB_middle = row.BB_middle
+            BB_lower = row.BB_lower
+            rsi = row.RSI
+            adx = row.ADX
+            DI_pos = row._7
+            DI_neg = row._8
+            volatility = row.Volatility
+
+            if position != 0:
+                if signaller.close_position(security_data=row, position_type=position):
+                    if position == 1:
+                        balance += (lot_size*current_price - 500)*30
+                    if position == -1:
+                        balance += (500 - current_price*lot_size)*30
+                    position = 0
+                    entry_price = 0
+                    lot_size = 0
+                    print("Position Closed at: ", current_price)
+
+            else:
+                if position == 0:
+                    # Check current minute data for signal
+                    signal = signaller.signal_generation(security_data=row)
+                    if signal != 0:
+                        prob_up, prob_down = ml_model.confidence_rating(current_price, BB_upper, BB_middle, BB_lower, rsi, adx, DI_pos, DI_neg, volatility)
+                        if signal == 1:
+                            print("Confidence Probability: ", prob_up)
+                        if prob_up > 0.5:
+                            print("Bought at: ", current_price)  
                             position = signal
                             entry_price = current_price
                             lot_size = 500/entry_price
+                
+                        if signal == -1:
+                            print("Confidence Probability: ", prob_down)
+                            if prob_down > 0.5:
+                                print("Shorted at: ", current_price)
+                                position = signal
+                                entry_price = current_price
+                                lot_size = 500/entry_price
 
-    """ Create dataset for desired range
-        Create trained machine learning model
-        Create signal object 
-        Create trading simulation time frame loop
-        Run on each interval and check for signals: if signal then check ML probability """
+        # Update model
+        print("\n END OF TRADING DAY!")
+        print("CURRENT BALANCE: ", balance)
 
-    """ Second Logic Challenge: Work out how to run day by day. At end of each day,
-        append newest day to machine learning training set and remove oldest day. Retrain the model and run again for the next day. 
-        Append newest day to reduce computational load """
-
-    """ After this do hyperparameter tuning. """
+        if retrain:
+            print("\nNEW TRAINING RANGE: ", trading_days[x-4], " TO ", trading_days[x+1], "\n")
+            new_training_data = prepare_dataset(ticker=ticker, start_date=trading_days[x-5], end_date=trading_days[x], data_period='5d', interval=interval)
+            ml_model.update_training_data(new_training_data=new_training_data)
+            ml_model.test_model()
+            ml_model.create_model()
+            print("\n")
 
     return balance

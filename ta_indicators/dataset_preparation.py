@@ -13,10 +13,10 @@ def prepare_entire_dataset(ticker, interval):
     dates_list = get_dates_list(ticker)
 
     # Get the oldest day of security data
-    security_data = yf.download(ticker, interval = interval, start=dates_list[0], end=dates_list[1], progress=False)
+    security_data = yf.download(ticker, interval = interval, start=dates_list[1], end=dates_list[2], progress=False)
 
     # Concatanate each following day to the current security data set until the most recent day
-    for x in range(1, len(dates_list)-1):
+    for x in range(2, len(dates_list)-1):
         data_period = yf.download(ticker, interval = interval, start=dates_list[x], end=dates_list[x+1], progress=False)
         security_data = pd.concat([security_data, data_period])
 
@@ -31,14 +31,14 @@ def prepare_entire_dataset(ticker, interval):
     # After applying the technical indicators the first n intervals for the lookback periods of technical analaysis will not have values so dropped
     security_data = security_data.dropna()
 
-    return security_data
+    return dates_list, security_data
 
 
 # Takes security, desired dataset period (1d, 5d), and desired trading interval (i.e, 1m, 5m) as input
 def prepare_dataset(ticker, start_date, end_date, data_period, interval):
 
     # Retrieve dataset from yahoo finance api
-    security_data = yf.download(ticker, period=data_period, interval=interval, progress=False)
+    security_data = yf.download(ticker, start=start_date, end=end_date, period=data_period, interval=interval, progress=False)
 
     # Add technical indicator values to the dataset
     security_data = pd.DataFrame(security_data)
@@ -46,7 +46,7 @@ def prepare_dataset(ticker, start_date, end_date, data_period, interval):
     # Append technical indicator values to the dataset by calling the functions
     security_data = bollinger_bands(security_data)
     security_data = rsi(security_data)
-    dataset = dmi_adx(security_data)
+    security_data = dmi_adx(security_data)
 
     # Drop uneeded columns
     security_data.drop(['High', 'Low', 'Open', 'Adj Close', 'Volume'], axis=1, inplace = True)
@@ -103,5 +103,25 @@ def prepare_simulation_range_date_list(ticker, start_date, end_date):
     
     # Creates a data frame which contains trading range dates in api call format
     security_data = security_data.index
+
+    return security_data
+
+
+# Gets latest days security data
+def get_current_days_data(ticker, interval):
+    # Retrieve dataset from yahoo finance api
+    security_data = yf.download(ticker, period='1d', interval=interval, progress=False)
+
+    # Add technical indicator values to the dataset
+    security_data = pd.DataFrame(security_data)
+
+    # Append technical indicator values to the dataset by calling the functions
+    security_data = bollinger_bands(security_data)
+    security_data = rsi(security_data)
+    security_data = dmi_adx(security_data)
+
+    # Drop uneeded columns
+    security_data.drop(['High', 'Low', 'Open', 'Adj Close', 'Volume'], axis=1, inplace = True)
+    security_data = security_data.dropna()
 
     return security_data

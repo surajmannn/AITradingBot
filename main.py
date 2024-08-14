@@ -27,7 +27,7 @@ def testing():
     #print(data.loc[data.index.month == 8])
     #GBP.test_model()
 
-    balance = run_trading_simulation(ticker='GBPUSD=X', start_date='2024-07-01', end_date='2024-08-12', training_range=1, data_period='5d', interval='1m')
+    balance = run_trading_simulation(ticker='GBPUSD=X', desired_model=2, start_date='2024-07-01', end_date='2024-08-12', training_range=1, simulation_range=1, data_period='5d', interval='1m')
     print("\nFinal Balance: ", balance)
 
 
