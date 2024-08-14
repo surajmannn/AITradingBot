@@ -5,7 +5,7 @@
 class Signal_Generation():
 
     # Class constructor with trading paramater input conditions
-    def __init__(self, rsi_oversold_level, rsi_overbought_level, adx_extreme_value, volatility_range, stoploss_range):
+    def __init__(self, rsi_oversold_level=30, rsi_overbought_level=70, adx_extreme_value=40, volatility_range=10, stoploss_range=1):
         self.rsi_oversold_level = rsi_oversold_level        # RSI oversold level (Usually 30)
         self.rsi_overbought_level = rsi_overbought_level    # RSI overbought level (Usually 70)
         self.adx_extreme_value = adx_extreme_value          # Extreme adx values indicate strong trend, set threshold

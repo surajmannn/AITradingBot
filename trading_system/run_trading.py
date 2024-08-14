@@ -11,45 +11,64 @@ from datetime import datetime, timedelta
 # This class initialises a trading simulation instance with required parameters
 class Run_Trading():
 
-    def __init__(self, ticker, data_period, interval, confidence_level, desired_model, start_date, end_date, training_range, simulation_range):
-        self.ticker = ticker                                # Security Ticker
-        self.data_period = data_period                      # The period of data to be used (5days by default)
-        self.interval = interval                            # The trading interval (1minute required for now)
-        self.confidence_level = confidence_level            # Confidence level for the machine learning probability (trade execution)
-        self.desired_model = desired_model                  # The specific model to use for simulation (1=MLP, 2=SVM, 3=RF, 4=LSTM)
-        self.start_date = start_date                        # The start date for the simulation
-        self.end_date = end_date                            # The end date for the simulation
-        self.training_range = training_range                # The range of training data in days
-        self.simulation_range = simulation_range            # The range of the simulation in days (maximum 17)
+    # Class constructor
+    def __init__(self, ticker, data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, 
+                 start_date=None, end_date=None, training_range=1, simulation_range=17):
+
+        self.ticker = ticker                                # (str) Security Ticker                                
+        self.data_period = data_period                      # (str) The period of data to be used (5days by default)
+        self.interval = interval                            # (str) The trading interval (1minute required for now)
+        self.confidence_level = confidence_level            # (float) Confidence level for the machine learning probability (trade execution)
+        self.desired_model = desired_model                  # (int) The specific model to use for simulation (1=MLP, 2=SVM, 3=RF, 4=LSTM)
+        self.start_date = start_date                        # (str) The start date for the simulation
+        self.end_date = end_date                            # (str) The end date for the simulation
+        self.training_range = training_range                # (int) The range of training data in days
+        self.simulation_range = simulation_range            # (int) The range of the simulation in days (maximum 17)
 
         self.trading_days = get_dates_list(self.ticker)     # Gets list of all trading days within simulation period
         self.number_trading_days = len(self.trading_days)   # Number of trading days in the simulation
 
         # Prepares the initial training dataset which is the 5days prior to the simulation start date
-        initial_training_data = prepare_dataset(
-            ticker=self.ticker, 
-            start_date=self.trading_days[self.number_trading_days-(self.simulation_range+5)], 
-            end_date=self.trading_days[self.number_trading_days-self.simulation_range], 
-            data_period=self.data_period, interval=self.interval
-        )
+        self.initial_training_data = self.prepare_initial_training_data()
 
         # Initialises the machine learning model object to be used
-        self.ml_model = Confidence_Probability(
-            ticker=self.ticker, 
-            interval=self.interval, 
-            training_range=1, 
-            desired_model=self.desired_model, 
-            look_ahead_values=[2,5,10,15,30],   # Values to be used as look ahead time intervals
-            dataset=initial_training_data
-        )
+        self.ml_model = self.initialise_ml_model()
 
         # Initialises a signalling object which handles signal generation during simulation
-        self.signaller = Signal_Generation(
-            rsi_oversold_level=30, 
-            rsi_overbought_level=70, 
-            adx_extreme_value=40, 
-            volatility_range=10, 
-            stoploss_range=2)
+        self.signaller = self.initialise_signaller()
+        
+    # Prepares the initial dataset
+    def prepare_initial_training_data(self):
+        start_date = self.trading_days[self.number_trading_days - (self.simulation_range + 5)]
+        end_date = self.trading_days[self.number_trading_days - self.simulation_range]
+        return prepare_dataset(
+            ticker=self.ticker,
+            start_date=start_date,
+            end_date=end_date,
+            data_period=self.data_period,
+            interval=self.interval
+        )
+    
+    # Intialises the machine learning model
+    def initialise_ml_model(self):
+        return Confidence_Probability(
+            ticker=self.ticker,
+            interval=self.interval,
+            training_range=1,
+            desired_model=self.desired_model,
+            look_ahead_values=[2, 5, 10, 15, 30],
+            dataset=self.initial_training_data
+        )
+    
+    # Intialises the signal generator 
+    def initialise_signaller(self):
+        return Signal_Generation(
+            rsi_oversold_level=30,
+            rsi_overbought_level=70,
+            adx_extreme_value=40,
+            volatility_range=10,
+            stoploss_range=2
+        )
 
     
     # Obtains the initial starting index for the simulation

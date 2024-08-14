@@ -33,18 +33,16 @@ class Confidence_Probability:
 
     # Initialise object with selected security, trading interval, 
     #... range of historic training data by weeks, and desired machine learning model as integers
-    def __init__(self, ticker, interval, training_range, desired_model, look_ahead_values, dataset):
-        self.ticker = ticker                        # Security name
-        self.interval = interval                    # Desired chart interval (i.e, 1min, 5min)
-        self.training_range = training_range        # Select amount of historic market weeks for training dataset (e.g. 1, 2, 3)
-        self.desired_model = desired_model          # 1 for MLPRegressor, 2 for SVM, 3 for Random Forest, 4 for LSTM
-        self.current_training_set = None            # Intialise empty training dataset
-        self.look_ahead = look_ahead_values         # Array of +n price intervals for determining labelling
-        self.dataset = dataset                      # Dataset to be used for trainin
-        self.model = None                           # initialise empty model
-        
-        # Update the dataset to contain classification labels
-        self.current_training_set = self.create_training_data()
+    def __init__(self, ticker, interval='1m', training_range=1, desired_model=1, look_ahead_values=[2,5,10,15,30], dataset=None):
+        self.ticker = ticker                        # (str) Security name
+        self.interval = interval                    # (str) Desired chart interval (i.e, 1min, 5min)
+        self.training_range = training_range        # (int) Select amount of historic market weeks for training dataset (e.g. 1, 2, 3)
+        self.desired_model = desired_model          # (int) The specific model to use for simulation (1=MLP, 2=SVM, 3=RF, 4=LSTM)
+        self.dataset = dataset                      # Dataset to be used for training
+        self.look_ahead = look_ahead_values         # (int array) Array of +n price intervals for determining labelling
+
+        self.model = None                                       # initialise empty model
+        self.current_training_set = self.create_training_data() # Initialise first training dataset on instantiation
 
     
     # Updates the current training data set
