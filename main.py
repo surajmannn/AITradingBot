@@ -28,7 +28,7 @@ def testing():
     #GBP.test_model()
 
     # MAX SIMULATION RANGE IS 17
-    balance = run_trading_simulation(ticker='GBPUSD=X', desired_model=1, start_date='2024-07-01', end_date='2024-08-12', training_range=1, simulation_range=50, data_period='5d', interval='1m')
+    balance = run_trading_simulation(ticker='GBPUSD=X', desired_model=1, start_date='2024-07-01', end_date='2024-08-12', training_range=1, simulation_range=5, data_period='5d', interval='1m')
     print("\nFinal Balance: ", balance)
 
 

@@ -67,15 +67,6 @@ class Signal_Generation():
     #...type is 1 if a buy position and -1 for a short position
     def close_position(self, security_data, position_type):
         # Create variables using the data from the dataset
-        """current_price = security_data['Close']
-        BB_upper = security_data['BB_upper']
-        BB_middle = security_data['BB_middle']
-        BB_lower = security_data['BB_lower']
-        rsi = security_data['RSI']
-        adx = security_data['ADX']
-        DI_pos = security_data['DI+']
-        DI_neg = security_data['DI-']
-        volatility = security_data['Volatility']"""
         current_price = security_data.Close
         BB_upper = security_data.BB_upper
         BB_middle = security_data.BB_middle
@@ -88,12 +79,12 @@ class Signal_Generation():
 
         # Buy position
         if position_type == 1:
-            if (rsi > 55 and adx < 25):       # adx > 25 indicates a strong trend which means it may be better to hold
+            if (rsi > 50 and adx < 25):       # adx > 25 indicates a strong trend which means it may be better to hold
                 return True
         
         # Short position
         if position_type == -1:
-            if (rsi < 45 and adx < 25):       # adx > 25 indicates a strong trend which means it may be better to hold
+            if (rsi < 50 and adx < 25):       # adx > 25 indicates a strong trend which means it may be better to hold
                 return True
 
         return False
@@ -106,7 +97,7 @@ class Signal_Generation():
         # stoploss percentage below the buy entry price
         if (position_type == 1 and entry_price*(1-stoploss_range) > current_price):
             return True
-        # stoploss percentage below the short entry price
+        # stoploss percentage above the short entry price
         if (position_type == -1 and entry_price*(1+stoploss_range) < current_price):
             return True
         

@@ -17,7 +17,7 @@ def get_training_start_date(start_date, training_range):
 
 
 # Obtains the initial starting index for the simulation
-#... Max simulation is 17days (inidicated by 3 weeks), otherwise start index current day subtracted by 5d trading week range
+#... Max simulation is 17days, so obtains relevant index reflecting desired simulation range
 def starting_index(simulation_range, trading_days):
     start_index = trading_days-simulation_range
     return start_index
@@ -32,6 +32,10 @@ def get_initial_training_data(ticker, simulation_range, data_period, interval):
 # Runs the trading simulation environment
 def run_trading_simulation(ticker, desired_model, start_date, end_date, training_range, simulation_range, data_period, interval):
 
+    if simulation_range > 17:
+        print("\nERROR! Desired trading day range out of bounds!")
+        return 0
+
     # Get list of the valid open forex trading days 
     trading_days = get_dates_list(ticker)
     number_trading_days = len(trading_days)
@@ -39,14 +43,11 @@ def run_trading_simulation(ticker, desired_model, start_date, end_date, training
 
     # Obtain starting index for simulation
     start_index = starting_index(simulation_range, number_trading_days)
-    
-    if simulation_range < 18:
-        print("\nCURRENT TRAINING RANGE: ", trading_days[number_trading_days-(simulation_range+5)], " TO ", trading_days[number_trading_days-simulation_range], "\n")
-        initial_training_data = prepare_dataset(ticker=ticker, start_date=trading_days[number_trading_days-(simulation_range+5)], end_date=trading_days[number_trading_days-simulation_range], 
-                                                data_period=data_period, interval=interval)
-    else:
-        print("\nERROR! Desired trading day range out of bounds!")
-        return 0
+
+    # Prepare the initial training dataset which is 5days prior to simulation starting range
+    print("\nCURRENT TRAINING RANGE: ", trading_days[number_trading_days-(simulation_range+5)], " TO ", trading_days[number_trading_days-simulation_range], "\n")
+    initial_training_data = prepare_dataset(ticker=ticker, start_date=trading_days[number_trading_days-(simulation_range+5)], end_date=trading_days[number_trading_days-simulation_range], 
+                                            data_period=data_period, interval=interval)
     
     # Create desired model for training on historic ticker data
     ml_model = Confidence_Probability(ticker=ticker, interval=interval, training_range=1, desired_model=desired_model, look_ahead_values=[2,5,10,15,30], dataset=initial_training_data)

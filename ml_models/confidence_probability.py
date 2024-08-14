@@ -94,6 +94,7 @@ class Confidence_Probability:
     # This function creates and trains the machine learning models based on the desired model
     def create_model(self):
 
+        # Use latest training dataset
         training_data = self.current_training_set
 
         # Define training data as all columns except labels columns
@@ -127,9 +128,10 @@ class Confidence_Probability:
 
     # Test models on a train/test split to get model performance metrics
     #... Different from live trading as the test set would be the actual running of the bot
-    #... Whereas the model here is tested based on class labels
+    #... Whereas the model here is tested based on class labels on training dataset
     def test_model(self):
 
+        # Use latest training data
         training_data = self.current_training_set
 
         # Define training data as all columns except labels columns
@@ -159,7 +161,7 @@ class Confidence_Probability:
 
         if self.desired_model == 4:
             self.LSTM('test')
-            return 0
+            return 0            # End function as LSTM function returns the model as the architecture is different
 
         # Fit the model on the training data
         trained_model.fit(X_train, y_train)
@@ -195,6 +197,7 @@ class Confidence_Probability:
     # LSTM Model as requires different architecture
     def LSTM(self, training_type):
 
+        # Use latest training data
         training_data = self.current_training_set
 
         # Define training data as all columns except labels columns
