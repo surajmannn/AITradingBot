@@ -68,9 +68,10 @@ class Run_Trading():
         return Signal_Generation(
             rsi_oversold_level=30,
             rsi_overbought_level=70,
-            adx_extreme_value=40,
+            adx_extreme_value=35,
+            DI_extreme_val=80,
             volatility_range=10,
-            stoploss_range=2
+            stoploss_range=1
         )
 
     
@@ -148,10 +149,29 @@ class Run_Trading():
 
                 # If position is currently open, only look for closing conditions
                 if position != 0:
-                    if self.signaller.close_position(security_data=row, position_type=position):
-                        if position == 1:
+                    # Check open position price for stoploss condition (auto position close to mitigate losses)
+                    if self.signaller.stoploss(entry_price, current_price, position):
+                        if position == 1:   # Buy position
                             value = (lot_size*current_price - 500)*30
-                        if position == -1:
+                        if position == -1:  # Short position
+                            value = (500 - current_price*lot_size)*30
+                        balance += value    # Adjust balance
+                        # Add stop loss close to database
+                        close_stoploss(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=current_price, 
+                              total_price=(value+500), profit=value, balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, 
+                              rsi=rsi, adx=adx, di_pos=DI_pos, di_neg=DI_neg, volatility=volatility
+                        )
+                        # Reset open position values
+                        position = 0
+                        entry_price = 0
+                        lot_size = 0
+                        print("Position Stoploss at: ", current_price)
+
+                    # Otherwise check values for closing condition
+                    elif self.signaller.close_position(security_data=row, position_type=position):
+                        if position == 1:   # Buy position
+                            value = (lot_size*current_price - 500)*30
+                        if position == -1:  # Short position
                             value = (500 - current_price*lot_size)*30
                         balance += value    # Adjust balance
                         
@@ -160,7 +180,7 @@ class Run_Trading():
                               total_price=(value+500), profit=value, balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, 
                               rsi=rsi, adx=adx, di_pos=DI_pos, di_neg=DI_neg, volatility=volatility
                         )
-                        
+                        # Reset open position values
                         position = 0
                         entry_price = 0
                         lot_size = 0
@@ -175,17 +195,17 @@ class Run_Trading():
                             prob_up, prob_down = self.ml_model.confidence_rating(current_price, BB_upper, BB_middle, BB_lower, rsi, adx, DI_pos, DI_neg, volatility)
                             if signal == 1:
                                 print("Confidence Probability: ", prob_up)
-                            if prob_up > self.confidence_level:
-                                print("Bought at: ", current_price)  
-                                position = signal
-                                entry_price = current_price
-                                lot_size = 500/entry_price
+                                if prob_up > self.confidence_level:
+                                    print("Bought at: ", current_price)  
+                                    position = signal
+                                    entry_price = current_price
+                                    lot_size = 500/entry_price
 
-                                # Add buy to database
-                                buy(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=entry_price, total_price=500, 
-                                    balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, rsi=rsi, adx=adx, 
-                                    di_pos=DI_pos, di_neg=DI_neg, volatility=volatility, confidence_probability=float(prob_up)
-                                )
+                                    # Add buy to database
+                                    buy(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=entry_price, total_price=500, 
+                                        balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, rsi=rsi, adx=adx, 
+                                        di_pos=DI_pos, di_neg=DI_neg, volatility=volatility, confidence_probability=float(prob_up)
+                                    )
                     
                             if signal == -1:
                                 print("Confidence Probability: ", prob_down)
