@@ -28,7 +28,7 @@ def add_position(values):
     # position = 1 if Buy, -1 if Sell, 0 if close, and -2 if stoploss close
     query = (
         "INSERT INTO simple_trades ("
-        "userID, ticker, mla, position, quantity, security_price, total_price, balance, purchase_date,"
+        "userID, ticker, mla, position_type, quantity, security_price, total_price, balance, purchase_date,"
         "BB_upper_band, BB_lower_band, RSI, ADX, DI_pos, DI_neg, volatility, confidence_probability"
         ") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
     )

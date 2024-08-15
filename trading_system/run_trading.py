@@ -128,16 +128,16 @@ class Run_Trading():
             for row in current_trading_day_data.itertuples(index=True, name='Pandas'):
 
                 # Current trading interval values from the dataset
-                current_date = row.Index
-                current_price = row.Close
-                BB_upper = row.BB_upper
-                BB_middle = row.BB_middle
-                BB_lower = row.BB_lower
-                rsi = row.RSI
-                adx = row.ADX
-                DI_pos = row._7
-                DI_neg = row._8
-                volatility = row.Volatility
+                current_date = str(row.Index)
+                current_price = float(row.Close)
+                BB_upper = float(row.BB_upper)
+                BB_middle = float(row.BB_middle)
+                BB_lower = float(row.BB_lower)
+                rsi = float(row.RSI)
+                adx = float(row.ADX)
+                DI_pos = float(row._7)
+                DI_neg = float(row._8)
+                volatility = float(row.Volatility)
 
                 # If position is currently open, only look for closing conditions
                 if position != 0:
@@ -150,8 +150,9 @@ class Run_Trading():
                         
                         # Add close to database
                         close(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=current_price, 
-                              balance=balance, total_price=value, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, 
-                              rsi=rsi, adx=adx, di_pos=DI_pos, di_neg=DI_neg, volatility=volatility)
+                              total_price=value, balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, 
+                              rsi=rsi, adx=adx, di_pos=DI_pos, di_neg=DI_neg, volatility=volatility
+                        )
                         
                         position = 0
                         entry_price = 0
@@ -176,7 +177,8 @@ class Run_Trading():
                                 # Add buy to database
                                 buy(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=entry_price, total_price=500, 
                                     balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, rsi=rsi, adx=adx, 
-                                    di_pos=DI_pos, di_neg=DI_neg, volatility=volatility, confidence_probability=prob_up)
+                                    di_pos=DI_pos, di_neg=DI_neg, volatility=volatility, confidence_probability=float(prob_up)
+                                )
                     
                             if signal == -1:
                                 print("Confidence Probability: ", prob_down)
@@ -188,8 +190,9 @@ class Run_Trading():
 
                                     # Add sell to database
                                     sell(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=entry_price, total_price=500, 
-                                    balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, rsi=rsi, adx=adx, 
-                                    di_pos=DI_pos, di_neg=DI_neg, volatility=volatility, confidence_probability=prob_down)
+                                        balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, rsi=rsi, adx=adx, 
+                                        di_pos=DI_pos, di_neg=DI_neg, volatility=volatility, confidence_probability=float(prob_down)
+                                    )
 
             # End of current trading day
             print("\n END OF TRADING DAY!")
