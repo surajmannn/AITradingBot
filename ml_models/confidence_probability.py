@@ -189,7 +189,7 @@ class Confidence_Probability:
         roc_auc = roc_auc_score(y_test_binary, prob_up)  # Use prob_up for AUC calculation
         print(f"ROC AUC Score: {roc_auc}")
 
-        return 0
+        return accuracy, roc_auc
     
 
     # LSTM Model as requires different architecture

@@ -3,6 +3,7 @@
 from trading_system.signal_generation import *
 from ta_indicators.dataset_preparation import *
 from trading_system.buy_and_sell import *
+from trading_system.ml_performance import *
 from ml_models.confidence_probability import *
 import time
 import yahoo_fin.stock_info as si
@@ -97,8 +98,14 @@ class Run_Trading():
         # Prepare the initial training dataset which is 5days prior to simulation starting range
         print("\nCURRENT TRAINING RANGE: ", self.trading_days[self.number_trading_days-(self.simulation_range+5)], " TO ", self.trading_days[self.number_trading_days-self.simulation_range], "\n")
 
-        # Test the model for performance metrics
-        self.ml_model.test_model()
+        # Test the model for performance metrics and initial metrics to database (first entry)
+        accuracy, roc_auc = self.ml_model.test_model()
+        add_metrics(ticker=self.ticker, ml_model=self.desired_model, 
+                    training_start_date=str(self.trading_days[self.number_trading_days-(self.simulation_range+5)]), 
+                    training_end_date=str(self.trading_days[self.number_trading_days-self.simulation_range]), 
+                    accuracy=float(accuracy), roc_auc=float(roc_auc)
+        )
+
         # Create the initial desired model
         self.ml_model.create_model()
 
@@ -150,7 +157,7 @@ class Run_Trading():
                         
                         # Add close to database
                         close(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=current_price, 
-                              total_price=value, balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, 
+                              total_price=(value+500), profit=value, balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, 
                               rsi=rsi, adx=adx, di_pos=DI_pos, di_neg=DI_neg, volatility=volatility
                         )
                         
@@ -211,7 +218,14 @@ class Run_Trading():
         new_training_data = prepare_dataset(ticker=self.ticker, start_date=self.trading_days[start_day], end_date=self.trading_days[end_day], 
                                             data_period='5d', interval=self.interval)
         self.ml_model.update_training_data(new_training_data=new_training_data)
-        self.ml_model.test_model()
+        accuracy, roc_auc = self.ml_model.test_model()
+
+        # Add model performance metrics to database
+        add_metrics(ticker=self.ticker, ml_model=self.desired_model, 
+                    training_start_date=str(self.trading_days[start_day]), 
+                    training_end_date=str(self.trading_days[end_day]), 
+                    accuracy=float(accuracy), roc_auc=float(roc_auc)
+        )
         self.ml_model.create_model()
         print("\n")
         

@@ -14,6 +14,3 @@ def get_user(id):
     value = id
     data = run_value_query(query, value)
     return data
-
-print(get_all_users())
-print(get_user(1))
