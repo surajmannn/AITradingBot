@@ -8,4 +8,4 @@ CREATE TABLE users (
 
 /* Insert users */
 INSERT INTO users (username) VALUES
-      ("user2");
+      ("test1");

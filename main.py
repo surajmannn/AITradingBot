@@ -9,10 +9,6 @@ import pandas as pd
 
 def main():
 
-    """ CREATE OBJECTS FROM CLASS
-    # Input parameters - (ticker), (interval), (window), (rsi_buy_boundary), (rsi_short_boundary), (confidence boundary), (stoploss range percentage)
-    # Signalling input requires (close_short_rsi), (close_buy_rsi), (decimal precision of security price) """
-
     """ FX """
 
 

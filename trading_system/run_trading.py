@@ -37,6 +37,8 @@ class Run_Trading():
         # Initialises a signalling object which handles signal generation during simulation
         self.signaller = self.initialise_signaller()
         
+    """ Initialisation Functions """
+
     # Prepares the initial dataset
     def prepare_initial_training_data(self):
         start_date = self.trading_days[self.number_trading_days - (self.simulation_range + 5)]
@@ -71,6 +73,8 @@ class Run_Trading():
         )
 
     
+    """ Simulation Functions"""
+
     # Obtains the initial starting index for the simulation
     #... Max simulation is 17days, so obtains relevant index reflecting desired simulation range
     def starting_index(self):
@@ -124,6 +128,7 @@ class Run_Trading():
             for row in current_trading_day_data.itertuples(index=True, name='Pandas'):
 
                 # Current trading interval values from the dataset
+                current_date = row.Index
                 current_price = row.Close
                 BB_upper = row.BB_upper
                 BB_middle = row.BB_middle
@@ -138,9 +143,16 @@ class Run_Trading():
                 if position != 0:
                     if self.signaller.close_position(security_data=row, position_type=position):
                         if position == 1:
-                            balance += (lot_size*current_price - 500)*30
+                            value = (lot_size*current_price - 500)*30
                         if position == -1:
-                            balance += (500 - current_price*lot_size)*30
+                            value = (500 - current_price*lot_size)*30
+                        balance += value    # Adjust balance
+                        
+                        # Add close to database
+                        close(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=current_price, 
+                              balance=balance, total_price=value, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, 
+                              rsi=rsi, adx=adx, di_pos=DI_pos, di_neg=DI_neg, volatility=volatility)
+                        
                         position = 0
                         entry_price = 0
                         lot_size = 0
@@ -160,6 +172,11 @@ class Run_Trading():
                                 position = signal
                                 entry_price = current_price
                                 lot_size = 500/entry_price
+
+                                # Add buy to database
+                                buy(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=entry_price, total_price=500, 
+                                    balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, rsi=rsi, adx=adx, 
+                                    di_pos=DI_pos, di_neg=DI_neg, volatility=volatility, confidence_probability=prob_up)
                     
                             if signal == -1:
                                 print("Confidence Probability: ", prob_down)
@@ -168,6 +185,11 @@ class Run_Trading():
                                     position = signal
                                     entry_price = current_price
                                     lot_size = 500/entry_price
+
+                                    # Add sell to database
+                                    sell(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=entry_price, total_price=500, 
+                                    balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, rsi=rsi, adx=adx, 
+                                    di_pos=DI_pos, di_neg=DI_neg, volatility=volatility, confidence_probability=prob_down)
 
             # End of current trading day
             print("\n END OF TRADING DAY!")
