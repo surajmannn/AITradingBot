@@ -3,8 +3,6 @@
 from ml_models.confidence_probability import *
 from ta_indicators.dataset_preparation import *
 from trading_system.run_trading import *
-
-from alpha_vantage.foreignexchange import ForeignExchange
 import pandas as pd
 
 def main():
