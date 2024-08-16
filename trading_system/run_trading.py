@@ -15,7 +15,8 @@ class Run_Trading():
     # Class constructor
     def __init__(self, ticker, data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, 
                  start_date=None, end_date=None, training_range=1, simulation_range=17, 
-                 rsi_oversold=30, rsi_overbought=70, adx_extreme_val=35, DI_extreme_val=75, volatility_range=10, stop_loss=1):
+                 rsi_oversold=30, rsi_overbought=70, adx_extreme_val=35, DI_extreme_val=75, 
+                 volatility_range=10, min_di_level=10, stop_loss=1):
         """ Simulation Params """
         self.ticker = ticker                                # (str) Security Ticker                                
         self.data_period = data_period                      # (str) The period of data to be used (5days by default)
@@ -33,6 +34,7 @@ class Run_Trading():
         self.adx_extreme_val = adx_extreme_val              # ADX Trend line extreme value (Threshold)
         self.DI_extreme_value = DI_extreme_val              # DI+ or DI_ extreme value (Threshold)
         self.volatility_range = volatility_range            # Minimum range between DI+ and DI- values
+        self.min_di_level = min_di_level                    # Minimum DI+/DI- value needed
         self.stop_loss = stop_loss                          # Stop loss percentage
 
         self.trading_days = get_dates_list(self.ticker)     # Gets list of all trading days within simulation period
@@ -80,6 +82,7 @@ class Run_Trading():
             adx_extreme_value=self.adx_extreme_val,
             DI_extreme_val=self.DI_extreme_value,
             volatility_range=self.volatility_range,
+            min_di_level=self.min_di_level,
             stoploss_range=self.stop_loss
         )
 

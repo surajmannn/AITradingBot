@@ -5,12 +5,14 @@
 class Signal_Generation():
 
     # Class constructor with trading paramater input conditions
-    def __init__(self, rsi_oversold_level=30, rsi_overbought_level=70, adx_extreme_value=40, DI_extreme_val=80, volatility_range=10, stoploss_range=1):
+    def __init__(self, rsi_oversold_level=30, rsi_overbought_level=70, adx_extreme_value=40, DI_extreme_val=80, 
+                 volatility_range=10, min_di_level=10, stoploss_range=1):
         self.rsi_oversold_level = rsi_oversold_level        # RSI oversold level (Usually 30)
         self.rsi_overbought_level = rsi_overbought_level    # RSI overbought level (Usually 70)
         self.adx_extreme_value = adx_extreme_value          # Extreme adx values indicate strong trend, set threshold
         self.DI_extreme_val = DI_extreme_val                # Extreme DI value indicates extreme trend in DI+ or DI-
         self.volatility_range = volatility_range            # Desired volatility for DMI(ADX)
+        self.min_di_level = min_di_level                    # Minimum DI+/DI- value needed for signal (below may indicate strong opposite trend)
         self.stoploss_range = stoploss_range                # Percentage stop loss for positions (absolute value)
 
 
@@ -50,7 +52,7 @@ class Signal_Generation():
     def buy_signal(self, current_price, BB_lower, rsi, adx, DI_pos, DI_neg, volatility):
         # Check current values for buy signal generation, return True if satisfied
         if (BB_lower < current_price and rsi < self.rsi_oversold_level and volatility > self.volatility_range 
-            and adx < self.adx_extreme_value and DI_neg < self.DI_extreme_val and DI_pos > 10):
+            and adx < self.adx_extreme_value and DI_neg < self.DI_extreme_val and DI_pos > self.min_di_level):
 
             return True     # Buy signal generated
         return False        # Return False as no signal present
@@ -60,7 +62,7 @@ class Signal_Generation():
     def short_signal(self, current_price, BB_upper, rsi, adx, DI_pos, DI_neg, volatility):
         # Check current values for short signal generation
         if (BB_upper > current_price and rsi > self.rsi_overbought_level and volatility > self.volatility_range and 
-            adx < self.adx_extreme_value and DI_pos < self.DI_extreme_val and DI_neg > 10):
+            adx < self.adx_extreme_value and DI_pos < self.DI_extreme_val and DI_neg > self.min_di_level):
 
             return True     # Short signal generated
         return False        # Return False as no signal present
@@ -82,12 +84,12 @@ class Signal_Generation():
 
         # Buy position
         if position_type == 1:
-            if (rsi > 50 and DI_neg>DI_pos):       # adx > 25 indicates a strong trend which means it may be better to hold
+            if (rsi > 50 and DI_neg>DI_pos and adx < 25):       # adx > 25 indicates a strong trend which means it may be better to hold
                 return True
         
         # Short position
         if position_type == -1:
-            if (rsi < 50 and DI_pos>DI_neg):       # adx > 25 indicates a strong trend which means it may be better to hold
+            if (rsi < 50 and DI_pos>DI_neg and adx < 25):       # adx > 25 indicates a strong trend which means it may be better to hold
                 return True
 
         return False
@@ -96,7 +98,7 @@ class Signal_Generation():
     # Check current price against entry price for stoploss margin forcing a closing of a position
     def stoploss(self, entry_price, current_price, position_type):
         # convert to percentage decimal
-        stoploss_range = self.stoploss_range / 500
+        stoploss_range = self.stoploss_range / 100
         # stoploss percentage below the buy entry price
         if (position_type == 1 and entry_price*(1-stoploss_range) > current_price):
             return True
