@@ -163,6 +163,9 @@ class Run_Trading():
 
                 # If position is currently open, only look for closing conditions
                 if position != 0:
+                    # Check probability of price direction
+                    prob_up, prob_down = self.ml_model.confidence_rating(current_price, BB_upper, BB_middle, BB_lower, rsi, adx, DI_pos, DI_neg, volatility)
+
                     # Check open position price for stoploss condition (auto position close to mitigate losses)
                     if self.signaller.stoploss(entry_price, current_price, position):
                         if position == 1:   # Buy position
@@ -182,7 +185,7 @@ class Run_Trading():
                         print("Position Stoploss at: ", current_price)
 
                     # Otherwise check values for closing condition
-                    elif self.signaller.close_position(security_data=row, position_type=position):
+                    elif self.signaller.close_position(security_data=row, position_type=position, prob_up=prob_up, prob_down=prob_down):
                         if position == 1:   # Buy position
                             value = (lot_size*current_price) - (trade_size*leverage)
                         if position == -1:  # Short position

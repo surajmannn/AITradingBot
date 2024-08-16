@@ -70,7 +70,7 @@ class Signal_Generation():
 
     # If position is open, checks criteria for closing or continuing to hold due to trend strength
     #...type is 1 if a buy position and -1 for a short position
-    def close_position(self, security_data, position_type):
+    def close_position(self, security_data, position_type, prob_up, prob_down):
         # Create variables using the data from the dataset
         current_price = security_data.Close
         BB_upper = security_data.BB_upper
@@ -84,13 +84,15 @@ class Signal_Generation():
 
         # Buy position
         if position_type == 1:
-            if (rsi > 50 and DI_neg>DI_pos or rsi > 50 and adx < 25):       # adx > 25 indicates a strong trend which means it may be better to hold
-                return True
+            if prob_up < 0.7:                                                   # If no strong probability of price continuing in trade direction 
+                if (rsi > 50 and DI_neg>DI_pos or rsi > 50 and adx < 25):       # adx > 25 indicates a strong trend which means it may be better to hold
+                    return True
         
         # Short position
         if position_type == -1:
-            if (rsi < 50 and DI_pos>DI_neg or rsi < 50 and adx < 25):       # adx > 25 indicates a strong trend which means it may be better to hold
-                return True
+            if prob_down < 0.7:                                                 # If no strong probability of price continuing in trade direction                                                
+                if (rsi < 50 and DI_pos>DI_neg or rsi < 50 and adx < 25):       # adx > 25 indicates a strong trend which means it may be better to hold
+                    return True
 
         return False
         
