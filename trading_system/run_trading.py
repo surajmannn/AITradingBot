@@ -14,8 +14,9 @@ class Run_Trading():
 
     # Class constructor
     def __init__(self, ticker, data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, 
-                 start_date=None, end_date=None, training_range=1, simulation_range=17):
-
+                 start_date=None, end_date=None, training_range=1, simulation_range=17, 
+                 rsi_oversold=30, rsi_overbought=70, adx_extreme_val=35, DI_extreme_val=75, volatility_range=10, stop_loss=1):
+        """ Simulation Params """
         self.ticker = ticker                                # (str) Security Ticker                                
         self.data_period = data_period                      # (str) The period of data to be used (5days by default)
         self.interval = interval                            # (str) The trading interval (1minute required for now)
@@ -25,6 +26,14 @@ class Run_Trading():
         self.end_date = end_date                            # (str) The end date for the simulation
         self.training_range = training_range                # (int) The range of training data in days
         self.simulation_range = simulation_range            # (int) The range of the simulation in days (maximum 17)
+
+        """ Signaller Params """
+        self.rsi_oversold = rsi_oversold                    # RSI Oversold value
+        self.rsi_overbought = rsi_overbought                # RSI Overbought value
+        self.adx_extreme_val = adx_extreme_val              # ADX Trend line extreme value (Threshold)
+        self.DI_extreme_value = DI_extreme_val              # DI+ or DI_ extreme value (Threshold)
+        self.volatility_range = volatility_range            # Minimum range between DI+ and DI- values
+        self.stop_loss = stop_loss                          # Stop loss percentage
 
         self.trading_days = get_dates_list(self.ticker)     # Gets list of all trading days within simulation period
         self.number_trading_days = len(self.trading_days)   # Number of trading days in the simulation
@@ -66,12 +75,12 @@ class Run_Trading():
     # Intialises the signal generator 
     def initialise_signaller(self):
         return Signal_Generation(
-            rsi_oversold_level=30,
-            rsi_overbought_level=70,
-            adx_extreme_value=35,
-            DI_extreme_val=80,
-            volatility_range=10,
-            stoploss_range=1
+            rsi_oversold_level=self.rsi_oversold,
+            rsi_overbought_level=self.rsi_overbought,
+            adx_extreme_value=self.adx_extreme_val,
+            DI_extreme_val=self.DI_extreme_value,
+            volatility_range=self.volatility_range,
+            stoploss_range=self.stop_loss
         )
 
     
@@ -110,12 +119,14 @@ class Run_Trading():
         # Create the initial desired model
         self.ml_model.create_model()
 
-        # Security value variables for simulation
-        position = 0
-        balance = 1000
-        entry_price = 0
-        lot_size = 0
-        retrain = True
+        # Security value variables for trade simulation
+        position = 0        # Default 0 = no position (1: Buy, -1: Short)
+        leverage = 30       # The leverage value for the trade
+        trade_size = 500    # The value amount per trade
+        balance = 1000      # Starting account balance
+        entry_price = 0     # Security price on position opening
+        lot_size = 0        # Size of position (pips)
+        retrain = True      # Should the model retrain
 
         # Loop through each market trading day within desired trading range
         for x in range(start_index, self.number_trading_days):
@@ -152,13 +163,13 @@ class Run_Trading():
                     # Check open position price for stoploss condition (auto position close to mitigate losses)
                     if self.signaller.stoploss(entry_price, current_price, position):
                         if position == 1:   # Buy position
-                            value = (lot_size*current_price - 500)*30
+                            value = (lot_size*current_price) - (trade_size*leverage)
                         if position == -1:  # Short position
-                            value = (500 - current_price*lot_size)*30
+                            value = (trade_size*leverage) - (current_price*lot_size)
                         balance += value    # Adjust balance
                         # Add stop loss close to database
                         close_stoploss(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=current_price, 
-                              total_price=(value+500), profit=value, balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, 
+                              total_price=(value+trade_size), profit=value, balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, 
                               rsi=rsi, adx=adx, di_pos=DI_pos, di_neg=DI_neg, volatility=volatility
                         )
                         # Reset open position values
@@ -170,14 +181,14 @@ class Run_Trading():
                     # Otherwise check values for closing condition
                     elif self.signaller.close_position(security_data=row, position_type=position):
                         if position == 1:   # Buy position
-                            value = (lot_size*current_price - 500)*30
+                            value = (lot_size*current_price) - (trade_size*leverage)
                         if position == -1:  # Short position
-                            value = (500 - current_price*lot_size)*30
+                            value = (trade_size*leverage) - (current_price*lot_size)
                         balance += value    # Adjust balance
                         
                         # Add close to database
                         close(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=current_price, 
-                              total_price=(value+500), profit=value, balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, 
+                              total_price=(value+trade_size), profit=value, balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, 
                               rsi=rsi, adx=adx, di_pos=DI_pos, di_neg=DI_neg, volatility=volatility
                         )
                         # Reset open position values
@@ -199,10 +210,10 @@ class Run_Trading():
                                     print("Bought at: ", current_price)  
                                     position = signal
                                     entry_price = current_price
-                                    lot_size = 500/entry_price
+                                    lot_size = (trade_size*leverage)/entry_price
 
                                     # Add buy to database
-                                    buy(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=entry_price, total_price=500, 
+                                    buy(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=entry_price, total_price=trade_size, 
                                         balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, rsi=rsi, adx=adx, 
                                         di_pos=DI_pos, di_neg=DI_neg, volatility=volatility, confidence_probability=float(prob_up)
                                     )
@@ -213,10 +224,10 @@ class Run_Trading():
                                     print("Shorted at: ", current_price)
                                     position = signal
                                     entry_price = current_price
-                                    lot_size = 500/entry_price
+                                    lot_size = (trade_size*leverage)/entry_price
 
                                     # Add sell to database
-                                    sell(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=entry_price, total_price=500, 
+                                    sell(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=entry_price, total_price=trade_size, 
                                         balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, rsi=rsi, adx=adx, 
                                         di_pos=DI_pos, di_neg=DI_neg, volatility=volatility, confidence_probability=float(prob_down)
                                     )
