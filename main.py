@@ -28,15 +28,15 @@ def main():
         (int) stop_loss             Percentage stop loss value
     """
 
-    GBPUSD = Run_Trading(ticker='GBPUSD=X', data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, simulation_range=17,
-                             rsi_oversold=30, rsi_overbought=70, adx_extreme_val=40, DI_extreme_val=85, volatility_range=10, min_di_level=10, stop_loss=1)
+    GBPUSD = Run_Trading(ticker='GBPUSD=X', data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, simulation_range=5,
+                             rsi_oversold=30, rsi_overbought=70, adx_extreme_val=35, DI_extreme_val=75, volatility_range=10, min_di_level=15, stop_loss=1)
     balance = GBPUSD.run_trading_simulation()
 
-    """EURUSD = Run_Trading(ticker='EURUSD=X', data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, simulation_range=17, 
-                         rsi_oversold=27, rsi_overbought=73, adx_extreme_val=35, DI_extreme_val=75, volatility_range=10, min_di_level=10, stop_loss=1)
+    """EURUSD = Run_Trading(ticker='EURUSD=X', data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, simulation_range=5, 
+                         rsi_oversold=30, rsi_overbought=70, adx_extreme_val=35, DI_extreme_val=70, volatility_range=10, min_di_level=15, stop_loss=1)
     balance = EURUSD.run_trading_simulation()"""
 
-    """USDJPY = Run_Trading(ticker='USDJPY=X', data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, simulation_range=17,
+    """USDJPY = Run_Trading(ticker='USDJPY=X', data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, simulation_range=5,
                              rsi_oversold=27, rsi_overbought=73, adx_extreme_val=35, DI_extreme_val=75, volatility_range=10, min_di_level=10, stop_loss=1)
     balance = USDJPY.run_trading_simulation()"""
 

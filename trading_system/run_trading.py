@@ -70,7 +70,7 @@ class Run_Trading():
             interval=self.interval,
             training_range=1,
             desired_model=self.desired_model,
-            look_ahead_values=[2, 5, 10, 15, 30],
+            look_ahead_values=[5,10,15,20,30],
             dataset=self.initial_training_data
         )
     
