@@ -70,7 +70,7 @@ class Run_Trading():
             interval=self.interval,
             training_range=1,
             desired_model=self.desired_model,
-            look_ahead_values=[5,10,15,20,30],
+            look_ahead_values=[5,15,30,45,60],
             dataset=self.initial_training_data
         )
     
@@ -118,6 +118,8 @@ class Run_Trading():
                     training_end_date=str(self.trading_days[self.number_trading_days-self.simulation_range]), 
                     accuracy=float(accuracy), roc_auc=float(roc_auc)
         )
+
+        return 0
 
         # Create the initial desired model
         self.ml_model.create_model()

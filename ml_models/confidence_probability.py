@@ -34,7 +34,7 @@ class Confidence_Probability:
 
     # Initialise object with selected security, trading interval, 
     #... range of historic training data by weeks, and desired machine learning model as integers
-    def __init__(self, ticker, interval='1m', training_range=1, desired_model=1, look_ahead_values=[2,5,10,15,30], dataset=None):
+    def __init__(self, ticker, interval='1m', training_range=1, desired_model=1, look_ahead_values=[5,15,30,45,60], dataset=None):
         self.ticker = ticker                        # (str) Security name
         self.interval = interval                    # (str) Desired chart interval (i.e, 1min, 5min)
         self.training_range = training_range        # (int) Select amount of historic market weeks for training dataset (e.g. 1, 2, 3)
@@ -75,8 +75,8 @@ class Confidence_Probability:
         # Finalize the 'Label' column: set to 1 if positive, -1 if negative
         training_data['Label'] = np.where(training_data['Label'] > 0, 1, -1)
 
-        # Remove last 30 rows as labels cannot be generated based on look ahead prices not exisiting
-        training_data = training_data[:-30]
+        # Remove max look_ahead value of rows as labels cannot be generated based on look ahead prices not exisiting (end of dataset)
+        training_data = training_data[:-max(self.look_ahead)]
         
         """# Count the number of 1's and -1's
         label_counts = training_data['Label'].value_counts()
@@ -102,15 +102,15 @@ class Confidence_Probability:
         # y output to be labels column
         y = training_data['Label']
 
-        # Determine model
+        # Determine and train desired model
         if self.desired_model == 1:
-            trained_model = MLPClassifier(hidden_layer_sizes=(100,100), max_iter=500, random_state=42)
+            trained_model = MLPClassifier(activation='relu', alpha=0.001, solver='adam', hidden_layer_sizes=(100,100), max_iter=1000, random_state=42)
         
         if self.desired_model == 2:
-            trained_model = SVC(probability=True, random_state=42)
+            trained_model = SVC(kernel='rbf', C=0.1, gamma='scale', probability=True, random_state=42)
 
         if self.desired_model == 3:
-            trained_model = RandomForestClassifier(n_estimators=100, random_state=42)
+            trained_model = RandomForestClassifier(max_depth=None, min_samples_leaf=1, min_samples_split=10, n_estimators=100, random_state=42)
 
         if self.desired_model == 4:
             trained_model = self.LSTM('simulation')
@@ -150,22 +150,22 @@ class Confidence_Probability:
 
         # Determine model
         if self.desired_model == 1:
-            trained_model = MLPClassifier(hidden_layer_sizes=(100,100), max_iter=500, random_state=42)
+            trained_model = MLPClassifier(activation='relu', alpha=0.001, solver='adam', hidden_layer_sizes=(100,100), max_iter=1000, random_state=42)
         
         if self.desired_model == 2:
-            trained_model = SVC(probability=True, random_state=42)
+            trained_model = SVC(kernel='rbf', C=0.1, gamma='scale', probability=True, random_state=42)
 
         if self.desired_model == 3:
-            trained_model = RandomForestClassifier(n_estimators=100, random_state=42)
+            trained_model = RandomForestClassifier(max_depth=None, min_samples_leaf=1, min_samples_split=10, n_estimators=100, random_state=42)
 
         if self.desired_model == 4:
-            self.LSTM('test')
-            return 0            # End function as LSTM function returns the model as the architecture is different
+            accuracy, roc_auc = self.LSTM('test')
+            return accuracy, roc_auc            # End function as LSTM function returns the model as the architecture is different
 
         # Fit the model on the training data
         trained_model.fit(X_train, y_train)
 
-        # Filter the test set for significant signal conditions (RSI > 65 or RSI < 35)
+        # Filter the test set for significant signal conditions (RSI > 65 or RSI < 35) for more realistic performance results compared with simulation
         X_test_signal = X_test[(X_test['RSI'] > 65) | (X_test['RSI'] < 35)]
         y_test_signal = y_test[(X_test['RSI'] > 65) | (X_test['RSI'] < 35)]
 
@@ -264,62 +264,33 @@ class Confidence_Probability:
         # If the model is for simulation, there is not train test split so return the model
         if training_type == 'simulation':
             return model
-        
-        # Filter the test set for significant signal conditions (RSI > 65 or RSI < 35)
-        X_test_signal = X_test[(X_test['RSI'] > 65) | (X_test['RSI'] < 35)]
-        y_test_signal = y_test[(X_test['RSI'] > 65) | (X_test['RSI'] < 35)]
-
-        if len(X_test_signal) == 0:
-            print("No significant signal conditions found in the test set.")
-            return None
 
         # Predict probabilities on the test set
-        y_proba = model.predict_proba(X_test)
-        y_proba_signal = model.predict_proba(X_test_signal)
+        y_proba = model.predict(X_test)
 
         # Extract probabilities for each class
         prob_up = y_proba[:, 1]  # Probability of price going up (class +1)
         prob_down = y_proba[:, 0]  # Probability of price going down (class -1)
 
-        # Extract probabilities for each class
-        prob_up_sig = y_proba_signal[:, 1]  # Probability of price going up (class +1)
-        prob_down_sig = y_proba_signal[:, 0]  # Probability of price going down (class -1)
-
         # Predict class labels based on the higher probability
         y_pred = np.where(prob_up > prob_down, 1, -1)
 
-        # Predict class labels based on the higher probability
-        y_pred_sig = np.where(prob_up_sig > prob_down_sig, 1, -1)
-
         # Convert y_test back from categorical
         y_test = np.argmax(y_test, axis=1) * 2 - 1  # Converts 0 to -1 and 1 to 1
-        y_test_sig = np.argmax(y_test_sig, axis=1) * 2 - 1  # Converts 0 to -1 and 1 to 1
 
         # Evaluate the model
         accuracy = accuracy_score(y_test, y_pred)
         print(f"Accuracy: {accuracy}")
 
-        # Evaluate the model on signal only
-        accuracy = accuracy_score(y_test_signal, y_pred_sig)
-        print(f"Signal Accuracy: {accuracy}")
-
         # Print classification report
         print("Classification Report:")
         print(classification_report(y_test, y_pred))
-
-        # Print classification report for sig
-        print("Signal Classification Report:")
-        print(classification_report(y_test_signal, y_pred_sig))
 
         # Compute ROC AUC score
         roc_auc = roc_auc_score(y_test, prob_up)  # Use prob_up for AUC calculation
         print(f"ROC AUC Score: {roc_auc}")
 
-        # Compute ROC AUC score for sig
-        roc_auc = roc_auc_score(y_test_sig, prob_up_sig)  # Use prob_up for AUC calculation
-        print(f"ROC AUC Signal Score: {roc_auc}")
-
-        return 0
+        return accuracy, roc_auc
     
 
     # Perform optimisation through hyper parameter grid search to determine best tuning
@@ -344,14 +315,16 @@ class Confidence_Probability:
         }
 
         param_grid_svc = {
-            'C': [0.1, 1, 10],
-            'kernel': ['linear', 'rbf'],
-            'gamma': [0.01, 0.1, 1],
+            'C': [0.05, 0.1, 1],
+            'kernel': ['rbf', 'poly'],
+            'gamma': ['scale', 0.01, 0.1, 1],
         }
 
         param_grid_rf = {
             'n_estimators': [50, 100, 200],
-            'max_depth': [None, 10, 20, 30]
+            'max_depth': [None, 10, 20, 30],
+            'min_samples_split': [2, 5, 10],
+            'min_samples_leaf': [1, 2, 4]
         }
 
         # Choose the model and parameter grid based on the desired model
