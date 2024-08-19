@@ -84,14 +84,15 @@ class Signal_Generation():
 
         # Buy position
         if position_type == 1:
-            if prob_up < 0.7:                                                   # If no strong probability of price continuing in trade direction 
-                if (rsi > 50 and DI_neg>DI_pos or rsi > 50 and adx < 25):       # adx > 25 indicates a strong trend which means it may be better to hold
+            if prob_up < 0.7:                          # If no strong probability of price continuing in trade direction 
+                if (rsi > 50 and DI_neg>DI_pos):       # adx > 25 indicates a strong trend which means it may be better to hold
                     return True
         
         # Short position
         if position_type == -1:
-            if prob_down < 0.7:                                                 # If no strong probability of price continuing in trade direction                                                
-                if (rsi < 50 and DI_pos>DI_neg or rsi < 50 and adx < 25):       # adx > 25 indicates a strong trend which means it may be better to hold
+            if prob_down < 0.7:                        # If no strong probability of price continuing in trade direction                                                
+                if (rsi < 50 and DI_pos>DI_neg):       # adx > 25 indicates a strong trend which means it may be better to hold
+                    # or DI_neg < DI_pos and adx < 20 ? Try this
                     return True
 
         return False

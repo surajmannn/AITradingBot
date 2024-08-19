@@ -13,11 +13,11 @@ def prepare_entire_dataset(ticker, interval):
     dates_list = get_dates_list(ticker)
 
     # Get the oldest day of security data
-    security_data = yf.download(ticker, interval = interval, start=dates_list[1], end=dates_list[2], progress=False)
+    security_data = yf.download(ticker, start=dates_list[4], end=dates_list[5], period='5d', interval=interval, progress=False)
 
     # Concatanate each following day to the current security data set until the most recent day
-    for x in range(2, len(dates_list)-1):
-        data_period = yf.download(ticker, interval = interval, start=dates_list[x], end=dates_list[x+1], progress=False)
+    for x in range(5, len(dates_list)-1):
+        data_period = yf.download(ticker, start=dates_list[x], end=dates_list[x+1], interval = interval, period='5d', progress=False)
         security_data = pd.concat([security_data, data_period])
 
     # Append technical indicator values to the dataset by calling the functions
@@ -31,7 +31,7 @@ def prepare_entire_dataset(ticker, interval):
     # After applying the technical indicators the first n intervals for the lookback periods of technical analaysis will not have values so dropped
     security_data = security_data.dropna()
 
-    return dates_list, security_data
+    return security_data
 
 
 # Takes security, desired dataset period (1d, 5d), and desired trading interval (i.e, 1m, 5m) as input

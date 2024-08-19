@@ -23,6 +23,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report, roc_auc_score
+from sklearn.model_selection import train_test_split, GridSearchCV
 
 # Import dataset preparation logic from indicators folder
 from ta_indicators.dataset_preparation import *
@@ -164,30 +165,59 @@ class Confidence_Probability:
         # Fit the model on the training data
         trained_model.fit(X_train, y_train)
 
+        # Filter the test set for significant signal conditions (RSI > 65 or RSI < 35)
+        X_test_signal = X_test[(X_test['RSI'] > 65) | (X_test['RSI'] < 35)]
+        y_test_signal = y_test[(X_test['RSI'] > 65) | (X_test['RSI'] < 35)]
+
+        if len(X_test_signal) == 0:
+            print("No significant signal conditions found in the test set.")
+            return None
+
         # Predict probabilities on the test set
         y_proba = trained_model.predict_proba(X_test)
+        y_proba_signal = trained_model.predict_proba(X_test_signal)
 
         # Extract probabilities for each class
         prob_up = y_proba[:, 1]  # Probability of price going up (class +1)
         prob_down = y_proba[:, 0]  # Probability of price going down (class -1)
 
+        # Extract probabilities for each class
+        prob_up_sig = y_proba_signal[:, 1]  # Probability of price going up (class +1)
+        prob_down_sig = y_proba_signal[:, 0]  # Probability of price going down (class -1)
+
         # Predict class labels based on the higher probability
         y_pred = np.where(prob_up > prob_down, 1, -1)
 
+        # Predict class labels based on the higher probability
+        y_pred_sig = np.where(prob_up_sig > prob_down_sig, 1, -1)
+
         # Convert y_test to binary (0 and 1)
         y_test_binary = (y_test + 1) // 2  # Converts -1 to 0 and 1 to 1
+        y_test_binary_signal = (y_test_signal + 1) // 2
 
         # Evaluate the model
         accuracy = accuracy_score(y_test, y_pred)
         print(f"Accuracy: {accuracy}")
 
+        # Evaluate the model on signal only
+        accuracy = accuracy_score(y_test_signal, y_pred_sig)
+        print(f"Signal Accuracy: {accuracy}")
+
         # Print classification report
         print("Classification Report:")
         print(classification_report(y_test, y_pred))
 
+        # Print classification report for sig
+        print("Signal Classification Report:")
+        print(classification_report(y_test_signal, y_pred_sig))
+
         # Compute ROC AUC score
         roc_auc = roc_auc_score(y_test_binary, prob_up)  # Use prob_up for AUC calculation
         print(f"ROC AUC Score: {roc_auc}")
+
+        # Compute ROC AUC score for sig
+        roc_auc = roc_auc_score(y_test_binary_signal, prob_up_sig)  # Use prob_up for AUC calculation
+        print(f"ROC AUC Signal Score: {roc_auc}")
 
         return accuracy, roc_auc
     
@@ -234,29 +264,136 @@ class Confidence_Probability:
         # If the model is for simulation, there is not train test split so return the model
         if training_type == 'simulation':
             return model
+        
+        # Filter the test set for significant signal conditions (RSI > 65 or RSI < 35)
+        X_test_signal = X_test[(X_test['RSI'] > 65) | (X_test['RSI'] < 35)]
+        y_test_signal = y_test[(X_test['RSI'] > 65) | (X_test['RSI'] < 35)]
+
+        if len(X_test_signal) == 0:
+            print("No significant signal conditions found in the test set.")
+            return None
 
         # Predict probabilities on the test set
-        y_proba = model.predict(X_test)
+        y_proba = model.predict_proba(X_test)
+        y_proba_signal = model.predict_proba(X_test_signal)
 
         # Extract probabilities for each class
-        prob_up = y_proba[:, 1]  # Probability of class +1
-        prob_down = y_proba[:, 0]  # Probability of class -1
+        prob_up = y_proba[:, 1]  # Probability of price going up (class +1)
+        prob_down = y_proba[:, 0]  # Probability of price going down (class -1)
+
+        # Extract probabilities for each class
+        prob_up_sig = y_proba_signal[:, 1]  # Probability of price going up (class +1)
+        prob_down_sig = y_proba_signal[:, 0]  # Probability of price going down (class -1)
 
         # Predict class labels based on the higher probability
         y_pred = np.where(prob_up > prob_down, 1, -1)
 
+        # Predict class labels based on the higher probability
+        y_pred_sig = np.where(prob_up_sig > prob_down_sig, 1, -1)
+
         # Convert y_test back from categorical
         y_test = np.argmax(y_test, axis=1) * 2 - 1  # Converts 0 to -1 and 1 to 1
+        y_test_sig = np.argmax(y_test_sig, axis=1) * 2 - 1  # Converts 0 to -1 and 1 to 1
 
         # Evaluate the model
+        accuracy = accuracy_score(y_test, y_pred)
+        print(f"Accuracy: {accuracy}")
+
+        # Evaluate the model on signal only
+        accuracy = accuracy_score(y_test_signal, y_pred_sig)
+        print(f"Signal Accuracy: {accuracy}")
+
+        # Print classification report
         print("Classification Report:")
         print(classification_report(y_test, y_pred))
 
+        # Print classification report for sig
+        print("Signal Classification Report:")
+        print(classification_report(y_test_signal, y_pred_sig))
+
         # Compute ROC AUC score
-        roc_auc = roc_auc_score((y_test + 1) // 2, prob_up)  # Use prob_up for AUC calculation, adjust y_test
+        roc_auc = roc_auc_score(y_test, prob_up)  # Use prob_up for AUC calculation
         print(f"ROC AUC Score: {roc_auc}")
 
+        # Compute ROC AUC score for sig
+        roc_auc = roc_auc_score(y_test_sig, prob_up_sig)  # Use prob_up for AUC calculation
+        print(f"ROC AUC Signal Score: {roc_auc}")
+
         return 0
+    
+
+    # Perform optimisation through hyper parameter grid search to determine best tuning
+    def hyperparameter_tuning(self):
+
+        # Use latest training data
+        training_data = self.current_training_set
+
+        # Define training data as all columns except labels columns
+        X = training_data.drop(columns=['Label'])
+
+        # y output to be labels column
+        y = training_data['Label']
+
+        # Define the parameter grids for each model
+        param_grid_mlp = {
+            'hidden_layer_sizes': [(50,50), (100,100), (200,), (100,50,25)],
+            'activation': ['relu', 'tanh'],
+            'solver': ['adam', 'sgd'],
+            'alpha': [0.001, 0.01, 0.1],
+            'max_iter': [1000, 2000]
+        }
+
+        param_grid_svc = {
+            'C': [0.1, 1, 10],
+            'kernel': ['linear', 'rbf'],
+            'gamma': [0.01, 0.1, 1],
+        }
+
+        param_grid_rf = {
+            'n_estimators': [50, 100, 200],
+            'max_depth': [None, 10, 20, 30]
+        }
+
+        # Choose the model and parameter grid based on the desired model
+        if self.desired_model == 1:
+            model = MLPClassifier(random_state=42)
+            param_grid = param_grid_mlp
+
+        if self.desired_model == 2:
+            model = SVC(probability=True, random_state=42)
+            param_grid = param_grid_svc
+
+        if self.desired_model == 3:
+            model = RandomForestClassifier(random_state=42)
+            param_grid = param_grid_rf
+
+        print("BEGINNING GRID SEARCH")
+        # Create the GridSearchCV object
+        grid_search = GridSearchCV(model, param_grid, scoring='accuracy', n_jobs=-1)
+
+        print("\nFITTING")
+        # Fit the model on the training data
+        grid_search.fit(X, y)
+
+        print("\nPREPARING RESULTS\n")
+        # Extract the results
+        results = grid_search.cv_results_
+
+        # Get the indices of the top 3 best hyperparameter sets
+        top_3_idx = results['rank_test_score'].argsort()[:3]
+
+        # Display the top 3 hyperparameter sets
+        print("Top 3 hyperparameter sets:")
+        for idx in top_3_idx:
+            print(f"Rank: {results['rank_test_score'][idx]}")
+            print(f"Mean Validation Score: {results['mean_test_score'][idx]}")
+            print(f"Hyperparameters: {results['params'][idx]}\n")
+
+        # Print the best parameters and score
+        print("Best parameters found: ", grid_search.best_params_)
+        print("Best cross-validation score: ", grid_search.best_score_)
+
+        return grid_search.best_params_
     
 
     # Using the model, create confidence rating predictions
