@@ -119,8 +119,6 @@ class Run_Trading():
                     accuracy=float(accuracy), roc_auc=float(roc_auc)
         )
 
-        return 0
-
         # Create the initial desired model
         self.ml_model.create_model()
 
@@ -141,7 +139,19 @@ class Run_Trading():
             # Check if end of loop is reached which indicates the data should be for the current trading day
             if x == len(self.trading_days)-1:
                 current_trading_day_data = get_current_days_data(self.ticker, self.interval)    # Get data for latest trading day  
-                retrain = False                                                                 # As on current day, do not retrain the model as this is the final simulated trading day    
+                retrain = False                                                                 # As on current day, do not retrain the model as this is the final simulated trading day
+
+                # Add close to database
+                close(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=current_price, 
+                        total_price=(value+trade_size), profit=value, balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, 
+                        rsi=rsi, adx=adx, di_pos=DI_pos, di_neg=DI_neg, volatility=volatility
+                )
+                # Reset open position values
+                position = 0
+                entry_price = 0
+                lot_size = 0
+                print("Position Closed at: ", current_price)
+                break    
             
             # Otherwise run on current simulation day and obtain that days trading data
             else:

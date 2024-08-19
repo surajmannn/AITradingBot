@@ -65,17 +65,17 @@ def main():
         (int) stop_loss             Percentage stop loss value
     """
 
-    GBPUSD = Run_Trading(ticker='GBPUSD=X', data_period='5d', interval='1m', confidence_level=0.57, desired_model=3, simulation_range=7,
-                             rsi_oversold=30, rsi_overbought=70, adx_extreme_val=35, DI_extreme_val=75, volatility_range=20, min_di_level=15, stop_loss=0.2)
+    GBPUSD = Run_Trading(ticker='GBPUSD=X', data_period='5d', interval='1m', confidence_level=0.6, desired_model=1, simulation_range=16,
+                             rsi_oversold=29.5, rsi_overbought=70.5, adx_extreme_val=30, DI_extreme_val=75, volatility_range=20, min_di_level=10, stop_loss=0.25)
     balance = GBPUSD.run_trading_simulation()
 
     """EURUSD = Run_Trading(ticker='EURUSD=X', data_period='5d', interval='1m', confidence_level=0.57, desired_model=1, simulation_range=5, 
                          rsi_oversold=30, rsi_overbought=70, adx_extreme_val=35, DI_extreme_val=75, volatility_range=20, min_di_level=15, stop_loss=0.15)
     balance = EURUSD.run_trading_simulation()"""
 
-    '''USDJPY = Run_Trading(ticker='USDJPY=X', data_period='5d', interval='1m', confidence_level=0.57, desired_model=1, simulation_range=5,
-                             rsi_oversold=29, rsi_overbought=71, adx_extreme_val=35, DI_extreme_val=75, volatility_range=20, min_di_level=10, stop_loss=0.15)
-    balance = USDJPY.run_trading_simulation()'''
+    """USDJPY = Run_Trading(ticker='USDJPY=X', data_period='5d', interval='1m', confidence_level=0.57, desired_model=1, simulation_range=16,
+                             rsi_oversold=29.5, rsi_overbought=70.5, adx_extreme_val=35, DI_extreme_val=75, volatility_range=20, min_di_level=10, stop_loss=0.15)
+    balance = USDJPY.run_trading_simulation()"""
 
     """AUDUSD = Run_Trading(ticker='AUDUSD=X', data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, simulation_range=5,
                              rsi_oversold=27, rsi_overbought=73, adx_extreme_val=35, DI_extreme_val=75, volatility_range=10, min_di_level=10, stop_loss=0.15)
