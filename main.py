@@ -44,6 +44,18 @@ def testing():
     #Best parameters found:  {'max_depth': None, 'min_samples_leaf': 1, 'min_samples_split': 10, 'n_estimators': 100}
 
     return 0
+
+# Write dataset which contains all interval data to a csv
+def write_all_data():
+
+    ticker = 'GBPUSD=X'
+    interval = '1m'
+    csv_file_path = f"{ticker}.csv"  # Create a file name using the ticker symbol
+
+    # Prepare the dataset and write it to the specified CSV file
+    data = prepare_entire_dataset(ticker, interval)
+    data = data.round(5)
+    data.to_csv(csv_file_path)
     
 
 def main():
@@ -67,7 +79,7 @@ def main():
 
     GBPUSD = Run_Trading(ticker='GBPUSD=X', data_period='5d', interval='1m', confidence_level=0.6, desired_model=1, simulation_range=16,
                              rsi_oversold=29.5, rsi_overbought=70.5, adx_extreme_val=30, DI_extreme_val=75, volatility_range=20, min_di_level=10, stop_loss=0.25)
-    balance = GBPUSD.run_trading_simulation()
+    balance = GBPUSD.run_noml_trading_simulation()
 
     """EURUSD = Run_Trading(ticker='EURUSD=X', data_period='5d', interval='1m', confidence_level=0.57, desired_model=1, simulation_range=5, 
                          rsi_oversold=30, rsi_overbought=70, adx_extreme_val=35, DI_extreme_val=75, volatility_range=20, min_di_level=15, stop_loss=0.15)
@@ -95,3 +107,4 @@ def main():
 if __name__ == "__main__":
     main()
     #testing()
+    #write_all_data()

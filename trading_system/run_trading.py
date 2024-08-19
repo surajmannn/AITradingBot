@@ -277,6 +277,136 @@ class Run_Trading():
         )
         self.ml_model.create_model()
         print("\n")
+
+
+    # Runs the trading simulation environment without machine learning models (benchmarking)
+    def run_noml_trading_simulation(self):
+
+        if self.simulation_range > 17:
+            print("\nERROR! Desired trading day range out of bounds!")
+            return 0
+
+        print(self.trading_days)
+
+        # Obtain starting index for simulation
+        start_index = self.starting_index()
+
+        # Prepare the initial training dataset which is 5days prior to simulation starting range
+        print("\nCURRENT TRAINING RANGE: ", self.trading_days[self.number_trading_days-(self.simulation_range+5)], " TO ", self.trading_days[self.number_trading_days-self.simulation_range], "\n")
+
+        # Security value variables for trade simulation
+        position = 0        # Default 0 = no position (1: Buy, -1: Short)
+        leverage = 30       # The leverage value for the trade
+        trade_size = 500    # The value amount per trade
+        balance = 1000      # Starting account balance
+        entry_price = 0     # Security price on position opening
+        lot_size = 0        # Size of position (pips)
+
+        # Loop through each market trading day within desired trading range
+        for x in range(start_index, self.number_trading_days):
+
+            print("\nCURRENT TRADING DAY: ", self.trading_days[x], "\n")
+
+            # Check if end of loop is reached which indicates the data should be for the current trading day
+            if x == len(self.trading_days)-1:
+                current_trading_day_data = get_current_days_data(self.ticker, self.interval)    # Get data for latest trading day
+                break  
+            
+            # Otherwise run on current simulation day and obtain that days trading data
+            else:
+                current_trading_day_data = prepare_dataset(ticker=self.ticker, start_date=self.trading_days[x], end_date=self.trading_days[x+1], 
+                                                           data_period='1d', interval=self.interval)
+
+            # Loop through each row of interval data on current trading day
+            for row in current_trading_day_data.itertuples(index=True, name='Pandas'):
+
+                # Current trading interval values from the dataset
+                current_date = str(row.Index)
+                current_price = float(row.Close)
+                BB_upper = float(row.BB_upper)
+                BB_middle = float(row.BB_middle)
+                BB_lower = float(row.BB_lower)
+                rsi = float(row.RSI)
+                adx = float(row.ADX)
+                DI_pos = float(row._7)
+                DI_neg = float(row._8)
+                volatility = float(row.Volatility)
+
+                # If position is currently open, only look for closing conditions
+                if position != 0:
+
+                    # Check open position price for stoploss condition (auto position close to mitigate losses)
+                    if self.signaller.stoploss(entry_price, current_price, position):
+                        if position == 1:   # Buy position
+                            value = (lot_size*current_price) - (trade_size*leverage)
+                        if position == -1:  # Short position
+                            value = (trade_size*leverage) - (current_price*lot_size)
+                        balance += value    # Adjust balance
+                        # Add stop loss close to database
+                        """close_stoploss(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=current_price, 
+                              total_price=(value+trade_size), profit=value, balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, 
+                              rsi=rsi, adx=adx, di_pos=DI_pos, di_neg=DI_neg, volatility=volatility
+                        )"""
+                        # Reset open position values
+                        position = 0
+                        entry_price = 0
+                        lot_size = 0
+                        print("Position Stoploss at: ", current_price)
+
+                    # Otherwise check values for closing condition
+                    elif self.signaller.close_position(security_data=row, position_type=position, prob_up=0, prob_down=0):
+                        if position == 1:   # Buy position
+                            value = (lot_size*current_price) - (trade_size*leverage)
+                        if position == -1:  # Short position
+                            value = (trade_size*leverage) - (current_price*lot_size)
+                        balance += value    # Adjust balance
+                        
+                        # Add close to database
+                        """close(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=current_price, 
+                              total_price=(value+trade_size), profit=value, balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, 
+                              rsi=rsi, adx=adx, di_pos=DI_pos, di_neg=DI_neg, volatility=volatility
+                        )"""
+                        # Reset open position values
+                        position = 0
+                        entry_price = 0
+                        lot_size = 0
+                        print("Position Closed at: ", current_price)
+
+                # If no position is open, then look to generate signals
+                else:
+                    if position == 0:
+                        # Check current minute data for signal
+                        signal = self.signaller.signal_generation(security_data=row)
+                        if signal != 0:
+                            if signal == 1:
+                                print("Bought at: ", current_price)  
+                                position = signal
+                                entry_price = current_price
+                                lot_size = (trade_size*leverage)/entry_price
+
+                                # Add buy to database
+                                """buy(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=entry_price, total_price=trade_size, 
+                                    balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, rsi=rsi, adx=adx, 
+                                    di_pos=DI_pos, di_neg=DI_neg, volatility=volatility, confidence_probability=float(prob_up)
+                                )"""
+                    
+                            if signal == -1:
+                                print("Shorted at: ", current_price)
+                                position = signal
+                                entry_price = current_price
+                                lot_size = (trade_size*leverage)/entry_price
+
+                                """# Add sell to database
+                                sell(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=entry_price, total_price=trade_size, 
+                                    balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, rsi=rsi, adx=adx, 
+                                    di_pos=DI_pos, di_neg=DI_neg, volatility=volatility, confidence_probability=float(prob_down)
+                                )"""
+
+            # End of current trading day
+            print("\n END OF TRADING DAY!")
+            print("CURRENT BALANCE: ", balance)
+
+        return balance
         
 
     # Retrieves the first datetime for the training dataset which should be 7*training range behind the inputted start_date
