@@ -77,11 +77,11 @@ def main():
         (int) stop_loss             Percentage stop loss value
     """
 
-    """GBPUSD = Run_Trading(ticker='GBPUSD=X', data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, simulation_range=17,
+    GBPUSD = Run_Trading(ticker='GBPUSD=X', data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, simulation_range=17,
                              rsi_oversold=30, rsi_overbought=70, adx_extreme_val=35, DI_extreme_val=75, volatility_range=15, min_di_level=10, stop_loss=0.15)
-    balance = GBPUSD.run_noml_trading_simulation()
+    balance = GBPUSD.run_trading_simulation()
 
-    print("\nFinal Balance: ", balance)"""
+    print("\nFinal Balance: ", balance)
 
     """USDJPY = Run_Trading(ticker='USDJPY=X', data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, simulation_range=17,
                              rsi_oversold=30, rsi_overbought=70, adx_extreme_val=35, DI_extreme_val=75, volatility_range=15, min_di_level=10, stop_loss=0.15)
@@ -89,11 +89,11 @@ def main():
 
     print("\nFinal Balance: ", balance)"""
 
-    AUDUSD = Run_Trading(ticker='AUDUSD=X', data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, simulation_range=17,
+    """AUDUSD = Run_Trading(ticker='AUDUSD=X', data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, simulation_range=17,
                              rsi_oversold=30, rsi_overbought=70, adx_extreme_val=35, DI_extreme_val=75, volatility_range=10, min_di_level=10, stop_loss=0.15)
     balance = AUDUSD.run_trading_simulation()
 
-    print("\nFinal Balance: ", balance)
+    print("\nFinal Balance: ", balance)"""
 
 
 if __name__ == "__main__":

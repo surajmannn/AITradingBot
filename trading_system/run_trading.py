@@ -112,11 +112,16 @@ class Run_Trading():
         print("\nCURRENT TRAINING RANGE: ", self.trading_days[self.number_trading_days-(self.simulation_range+5)], " TO ", self.trading_days[self.number_trading_days-self.simulation_range], "\n")
 
         # Test the model for performance metrics and initial metrics to database (first entry)
-        accuracy, roc_auc  = self.ml_model.test_model()
+        if self.desired_model != 4:
+            accuracy, roc_auc, sig_accuracy, sig_roc_auc  = self.ml_model.test_model()
+        else:
+            accuracy, roc_auc = self.ml_model.test_model()
+            sig_accuracy = accuracy
+            sig_roc_auc = roc_auc
         add_metrics(ticker=self.ticker, ml_model=self.desired_model, 
                     training_start_date=str(self.trading_days[self.number_trading_days-(self.simulation_range+5)]), 
                     training_end_date=str(self.trading_days[self.number_trading_days-self.simulation_range]), 
-                    accuracy=float(accuracy), roc_auc=float(roc_auc)
+                    accuracy=float(accuracy), roc_auc=float(roc_auc), sig_accuracy=float(sig_accuracy), sig_roc_auc=float(sig_roc_auc)
         )
 
         # Create the initial desired model
@@ -274,13 +279,19 @@ class Run_Trading():
         new_training_data = prepare_dataset(ticker=self.ticker, start_date=self.trading_days[start_day], end_date=self.trading_days[end_day], 
                                             data_period='5d', interval=self.interval)
         self.ml_model.update_training_data(new_training_data=new_training_data)
-        accuracy, roc_auc = self.ml_model.test_model()
+        if self.desired_model != 4:
+            accuracy, roc_auc, sig_accuracy, sig_roc_auc  = self.ml_model.test_model()
+        else:
+            accuracy, roc_auc = self.ml_model.test_model()
+            sig_accuracy = accuracy
+            sig_roc_auc = roc_auc
 
         # Add model performance metrics to database
         add_metrics(ticker=self.ticker, ml_model=self.desired_model, 
                     training_start_date=str(self.trading_days[start_day]), 
                     training_end_date=str(self.trading_days[end_day]), 
-                    accuracy=float(accuracy), roc_auc=float(roc_auc)
+                    accuracy=float(accuracy), roc_auc=float(roc_auc), 
+                    sig_accuracy=float(sig_accuracy), sig_roc_auc=float(sig_roc_auc)
         )
         self.ml_model.create_model()
         print("\n")

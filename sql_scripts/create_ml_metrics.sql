@@ -22,6 +22,8 @@ CREATE TABLE ml_metrics (
     training_end_date TEXT,
     accuracy FLOAT,
     ROC_AUC FLOAT,
+    sig_accuracy FLOAT,
+    sig_ROC_AUC FLOAT,
     FOREIGN KEY (userID) REFERENCES users (ID),
     PRIMARY KEY (ID)
 );

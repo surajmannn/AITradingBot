@@ -19,8 +19,8 @@ def get_model_data(id):
 def add_performance_metrics(values):
     query = (
         "INSERT INTO ml_metrics ("
-        "userID, ticker, ml_model, training_start_date, training_end_date, accuracy, ROC_AUC"
-        ") VALUES (%s, %s, %s, %s, %s, %s, %s)"
+        "userID, ticker, ml_model, training_start_date, training_end_date, accuracy, ROC_AUC, sig_accuracy, sig_ROC_AUC"
+        ") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
     )
     data = run_alter_query(query, values)
     return data
