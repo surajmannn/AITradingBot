@@ -202,7 +202,7 @@ class Confidence_Probability:
 
         # Evaluate the model on signal only
         sig_accuracy = accuracy_score(y_test_signal, y_pred_sig)
-        print(f"Signal Accuracy: {accuracy}")
+        print(f"Signal Accuracy: {sig_accuracy}")
 
         # Print classification report
         print("Classification Report:")
@@ -218,7 +218,7 @@ class Confidence_Probability:
 
         # Compute ROC AUC score for sig
         sig_roc_auc = roc_auc_score(y_test_binary_signal, prob_up_sig)  # Use prob_up for AUC calculation
-        print(f"ROC AUC Signal Score: {roc_auc}")
+        print(f"ROC AUC Signal Score: {sig_roc_auc}")
 
         return accuracy, roc_auc, sig_accuracy, sig_roc_auc
     

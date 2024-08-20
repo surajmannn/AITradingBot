@@ -30,7 +30,7 @@ def add_position(values):
     # INSERT INTO noml_trades
     # INSERT INTO simple_trades
     query = (
-        "INSERT INTO trade_results ("
+        "INSERT INTO simple_trades ("
         "userID, ticker, mla, position_type, quantity, security_price, total_price, profit, balance, purchase_date,"
         "BB_upper_band, BB_lower_band, RSI, ADX, DI_pos, DI_neg, volatility, confidence_probability"
         ") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"

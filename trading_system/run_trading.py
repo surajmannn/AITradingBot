@@ -112,7 +112,7 @@ class Run_Trading():
         print("\nCURRENT TRAINING RANGE: ", self.trading_days[self.number_trading_days-(self.simulation_range+5)], " TO ", self.trading_days[self.number_trading_days-self.simulation_range], "\n")
 
         # Test the model for performance metrics and initial metrics to database (first entry)
-        accuracy, roc_auc, sig_accuracy, sig_roc_auc = self.ml_model.test_model()
+        accuracy, roc_auc  = self.ml_model.test_model()
         add_metrics(ticker=self.ticker, ml_model=self.desired_model, 
                     training_start_date=str(self.trading_days[self.number_trading_days-(self.simulation_range+5)]), 
                     training_end_date=str(self.trading_days[self.number_trading_days-self.simulation_range]), 
@@ -137,8 +137,8 @@ class Run_Trading():
             print("\nCURRENT TRADING DAY: ", self.trading_days[x], "\n")
 
             # Check if end of loop is reached which indicates the data should be for the current trading day
-            if x == len(self.trading_days)-2:
-                if position != 0:
+            if x == len(self.trading_days)-1:
+                """if position != 0:
                     # Force close at end of trading day
                     if position == 1:   # Buy position
                         value = (lot_size*current_price) - (trade_size*leverage)
@@ -156,7 +156,7 @@ class Run_Trading():
                     entry_price = 0
                     lot_size = 0
                     print("Position Closed at: ", current_price)
-                return balance
+                return balance"""
                 current_trading_day_data = get_current_days_data(self.ticker, self.interval)    # Get data for latest trading day  
                 retrain = False                                                                 # As on current day, do not retrain the model as this is the final simulated trading day
             
@@ -256,26 +256,6 @@ class Run_Trading():
                                         balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, rsi=rsi, adx=adx, 
                                         di_pos=DI_pos, di_neg=DI_neg, volatility=volatility, confidence_probability=float(prob_down)
                                     )
-
-            """# No carry over contracts - force close
-            if position != 0:
-                # Force close at end of trading day
-                if position == 1:   # Buy position
-                    value = (lot_size*current_price) - (trade_size*leverage)
-                if position == -1:  # Short position
-                    value = (trade_size*leverage) - (current_price*lot_size)
-                balance += value    # Adjust balance
-
-                # Add close to database
-                close(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=current_price, 
-                        total_price=(value+trade_size), profit=value, balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, 
-                        rsi=rsi, adx=adx, di_pos=DI_pos, di_neg=DI_neg, volatility=volatility
-                )
-                # Reset open position values
-                position = 0
-                entry_price = 0
-                lot_size = 0
-                print("Position Closed at: ", current_price)"""
             
             # End of current trading day
             print("\n END OF TRADING DAY!")
@@ -294,7 +274,7 @@ class Run_Trading():
         new_training_data = prepare_dataset(ticker=self.ticker, start_date=self.trading_days[start_day], end_date=self.trading_days[end_day], 
                                             data_period='5d', interval=self.interval)
         self.ml_model.update_training_data(new_training_data=new_training_data)
-        accuracy, roc_auc, sig_accuracy, sig_roc_auc = self.ml_model.test_model()
+        accuracy, roc_auc = self.ml_model.test_model()
 
         # Add model performance metrics to database
         add_metrics(ticker=self.ticker, ml_model=self.desired_model, 
@@ -332,25 +312,25 @@ class Run_Trading():
             print("\nCURRENT TRADING DAY: ", self.trading_days[x], "\n")
 
             # Check if end of loop is reached which indicates the data should be for the current trading day
-            if x == len(self.trading_days)-2:
-                #current_trading_day_data = get_current_days_data(self.ticker, self.interval)    # Get data for latest trading day
-                if position == 1:   # Buy position
+            if x == len(self.trading_days)-1:
+                current_trading_day_data = get_current_days_data(self.ticker, self.interval)    # Get data for latest trading day
+                """if position == 1:   # Buy position
                     value = (lot_size*current_price) - (trade_size*leverage)
                 if position == -1:  # Short position
                     value = (trade_size*leverage) - (current_price*lot_size)
                 balance += value    # Adjust balance
 
                 # Add close to database
-                """close(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=current_price, 
+                close(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=current_price, 
                         total_price=(value+trade_size), profit=value, balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, 
                         rsi=rsi, adx=adx, di_pos=DI_pos, di_neg=DI_neg, volatility=volatility
-                )"""
+                )
                 # Reset open position values
                 position = 0
                 entry_price = 0
                 lot_size = 0
                 print("Position Closed at: ", current_price)
-                return balance 
+                return balance""" 
             
             # Otherwise run on current simulation day and obtain that days trading data
             else:
@@ -383,10 +363,10 @@ class Run_Trading():
                             value = (trade_size*leverage) - (current_price*lot_size)
                         balance += value    # Adjust balance
                         # Add stop loss close to database
-                        """close_stoploss(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=current_price, 
+                        close_stoploss(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=current_price, 
                               total_price=(value+trade_size), profit=value, balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, 
                               rsi=rsi, adx=adx, di_pos=DI_pos, di_neg=DI_neg, volatility=volatility
-                        )"""
+                        )
                         # Reset open position values
                         position = 0
                         entry_price = 0
@@ -402,10 +382,10 @@ class Run_Trading():
                         balance += value    # Adjust balance
                         
                         # Add close to database
-                        """close(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=current_price, 
+                        close(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=current_price, 
                               total_price=(value+trade_size), profit=value, balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, 
                               rsi=rsi, adx=adx, di_pos=DI_pos, di_neg=DI_neg, volatility=volatility
-                        )"""
+                        )
                         # Reset open position values
                         position = 0
                         entry_price = 0
@@ -425,10 +405,10 @@ class Run_Trading():
                                 lot_size = (trade_size*leverage)/entry_price
 
                                 # Add buy to database
-                                """buy(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=entry_price, total_price=trade_size, 
+                                buy(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=entry_price, total_price=trade_size, 
                                     balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, rsi=rsi, adx=adx, 
-                                    di_pos=DI_pos, di_neg=DI_neg, volatility=volatility, confidence_probability=float(prob_up)
-                                )"""
+                                    di_pos=DI_pos, di_neg=DI_neg, volatility=volatility, confidence_probability=0
+                                )
                     
                             if signal == -1:
                                 print("Shorted at: ", current_price)
@@ -436,11 +416,11 @@ class Run_Trading():
                                 entry_price = current_price
                                 lot_size = (trade_size*leverage)/entry_price
 
-                                """# Add sell to database
+                                # Add sell to database
                                 sell(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=entry_price, total_price=trade_size, 
                                     balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, rsi=rsi, adx=adx, 
-                                    di_pos=DI_pos, di_neg=DI_neg, volatility=volatility, confidence_probability=float(prob_down)
-                                )"""
+                                    di_pos=DI_pos, di_neg=DI_neg, volatility=volatility, confidence_probability=0
+                                )
 
             # End of current trading day
             print("\n END OF TRADING DAY!")
