@@ -142,7 +142,8 @@ class Run_Trading():
             print("\nCURRENT TRADING DAY: ", self.trading_days[x], "\n")
 
             # Check if end of loop is reached which indicates the data should be for the current trading day
-            if x == len(self.trading_days)-1:
+            if x == len(self.trading_days)-2:
+                return 0
                 """if position != 0:
                     # Force close at end of trading day
                     if position == 1:   # Buy position
@@ -161,16 +162,16 @@ class Run_Trading():
                     entry_price = 0
                     lot_size = 0
                     print("Position Closed at: ", current_price)
-                return balance"""
+                return balance
                 current_trading_day_data = get_current_days_data(self.ticker, self.interval)    # Get data for latest trading day  
                 retrain = False                                                                 # As on current day, do not retrain the model as this is the final simulated trading day
-            
+            """
             # Otherwise run on current simulation day and obtain that days trading data
             else:
                 current_trading_day_data = prepare_dataset(ticker=self.ticker, start_date=self.trading_days[x], end_date=self.trading_days[x+1], 
                                                            data_period='1d', interval=self.interval)
 
-            # Loop through each row of interval data on current trading day
+            """# Loop through each row of interval data on current trading day
             for row in current_trading_day_data.itertuples(index=True, name='Pandas'):
 
                 # Current trading interval values from the dataset
@@ -260,7 +261,7 @@ class Run_Trading():
                                     sell(ticker=self.ticker, mla=self.desired_model, quantity=lot_size, security_price=entry_price, total_price=trade_size, 
                                         balance=balance, purchase_date=current_date, BB_upper=BB_upper, BB_lower=BB_lower, rsi=rsi, adx=adx, 
                                         di_pos=DI_pos, di_neg=DI_neg, volatility=volatility, confidence_probability=float(prob_down)
-                                    )
+                                    )"""
             
             # End of current trading day
             print("\n END OF TRADING DAY!")
