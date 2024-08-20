@@ -114,6 +114,7 @@ class Confidence_Probability:
 
         if self.desired_model == 4:
             trained_model = self.LSTM('simulation')
+            self.model = trained_model
             return trained_model
 
         # Fit the model on the training data
@@ -200,7 +201,7 @@ class Confidence_Probability:
         print(f"Accuracy: {accuracy}")
 
         # Evaluate the model on signal only
-        accuracy = accuracy_score(y_test_signal, y_pred_sig)
+        sig_accuracy = accuracy_score(y_test_signal, y_pred_sig)
         print(f"Signal Accuracy: {accuracy}")
 
         # Print classification report
@@ -216,10 +217,10 @@ class Confidence_Probability:
         print(f"ROC AUC Score: {roc_auc}")
 
         # Compute ROC AUC score for sig
-        roc_auc = roc_auc_score(y_test_binary_signal, prob_up_sig)  # Use prob_up for AUC calculation
+        sig_roc_auc = roc_auc_score(y_test_binary_signal, prob_up_sig)  # Use prob_up for AUC calculation
         print(f"ROC AUC Signal Score: {roc_auc}")
 
-        return accuracy, roc_auc
+        return accuracy, roc_auc, sig_accuracy, sig_roc_auc
     
 
     # LSTM Model as requires different architecture

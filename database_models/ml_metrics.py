@@ -15,9 +15,10 @@ def get_model_data(id):
     data = run_value_query(query, value)
     return data
 
+# INSERT INTO ml_metrics_results
 def add_performance_metrics(values):
     query = (
-        "INSERT INTO ml_metrics ("
+        "INSERT INTO ml_metrics_results ("
         "userID, ticker, ml_model, training_start_date, training_end_date, accuracy, ROC_AUC"
         ") VALUES (%s, %s, %s, %s, %s, %s, %s)"
     )
