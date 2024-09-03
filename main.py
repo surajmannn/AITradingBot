@@ -48,12 +48,12 @@ def testing():
 # Write dataset which contains all interval data to a csv
 def write_all_data():
 
-    ticker = 'GBPUSD=X'
+    ticker = 'AUDUSD=X'
     interval = '1m'
     csv_file_path = f"{ticker}.csv"  # Create a file name using the ticker symbol
 
     # Prepare the dataset and write it to the specified CSV file
-    data = prepare_entire_dataset(ticker, interval)
+    data = prepare_dataset(ticker=ticker, start_date='2024-08-26', end_date='2024-08-31', data_period='5d', interval=interval)
     data = data.round(5)
     data.to_csv(csv_file_path)
     
@@ -77,22 +77,25 @@ def main():
         (int) stop_loss             Percentage stop loss value
     """
 
-    GBPUSD = Run_Trading(ticker='GBPUSD=X', data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, simulation_range=17,
-                             rsi_oversold=30, rsi_overbought=70, adx_extreme_val=35, DI_extreme_val=75, volatility_range=15, min_di_level=10, stop_loss=0.15)
+    GBPUSD = Run_Trading(ticker='GBPUSD=X', start_balance=1000, data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, simulation_range=7,
+                             rsi_oversold=30, rsi_overbought=70, adx_extreme_val=30, DI_extreme_val=75, volatility_range=15, min_di_level=10, stop_loss=0.15)
     balance = GBPUSD.run_trading_simulation()
-
+    
+    # Models: 1: 1664.8, 2: 1450.81, 3: 1271, 4: 1431.05, noml: 1459.74
     print("\nFinal Balance: ", balance)
 
-    USDJPY = Run_Trading(ticker='USDJPY=X', data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, simulation_range=17,
-                             rsi_oversold=30, rsi_overbought=70, adx_extreme_val=35, DI_extreme_val=75, volatility_range=15, min_di_level=10, stop_loss=0.15)
+    USDJPY = Run_Trading(ticker='USDJPY=X', start_balance=1000, data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, simulation_range=7,
+                             rsi_oversold=30, rsi_overbought=70, adx_extreme_val=30, DI_extreme_val=75, volatility_range=15, min_di_level=12, stop_loss=0.1)
     balance = USDJPY.run_trading_simulation()
 
+    # Models: 1: 1145.74, 2: 1134.87, 3: 1528.24, 4: 977.468, noml: 1008.13 
     print("\nFinal Balance: ", balance)
 
-    AUDUSD = Run_Trading(ticker='AUDUSD=X', data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, simulation_range=17,
-                             rsi_oversold=30, rsi_overbought=70, adx_extreme_val=35, DI_extreme_val=75, volatility_range=10, min_di_level=10, stop_loss=0.15)
+    AUDUSD = Run_Trading(ticker='AUDUSD=X', start_balance=1000, data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, simulation_range=7,
+                             rsi_oversold=30, rsi_overbought=70, adx_extreme_val=30, DI_extreme_val=75, volatility_range=15, min_di_level=10, stop_loss=0.15)
     balance = AUDUSD.run_trading_simulation()
 
+    # Models: 1: 1665.58, 2: 1664.49, 3: 1798.53, 4: 1657.2, noml: 1382.65
     print("\nFinal Balance: ", balance)
 
 
