@@ -81,21 +81,21 @@ def main():
                              rsi_oversold=30, rsi_overbought=70, adx_extreme_val=30, DI_extreme_val=75, volatility_range=15, min_di_level=10, stop_loss=0.15)
     balance = GBPUSD.run_trading_simulation()
     
-    # Models: 1: 1664.8, 2: 1450.81, 3: 1271, 4: 1431.05, noml: 1459.74
+    # Models: 1: 1760.64, 2: 1546.65, 3: 1342.84, 4: 1526.89, noml: 1538.87
     print("\nFinal Balance: ", balance)
 
     USDJPY = Run_Trading(ticker='USDJPY=X', start_balance=1000, data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, simulation_range=7,
                              rsi_oversold=30, rsi_overbought=70, adx_extreme_val=30, DI_extreme_val=75, volatility_range=15, min_di_level=12, stop_loss=0.1)
     balance = USDJPY.run_trading_simulation()
 
-    # Models: 1: 1145.74, 2: 1134.87, 3: 1528.24, 4: 977.468, noml: 1008.13 
+    # Models: 1: 1158.23, 2: 1105.76, 3: 1522.37, 4: 918.288, noml: 972.348
     print("\nFinal Balance: ", balance)
 
     AUDUSD = Run_Trading(ticker='AUDUSD=X', start_balance=1000, data_period='5d', interval='1m', confidence_level=0.5, desired_model=1, simulation_range=7,
                              rsi_oversold=30, rsi_overbought=70, adx_extreme_val=30, DI_extreme_val=75, volatility_range=15, min_di_level=10, stop_loss=0.15)
     balance = AUDUSD.run_trading_simulation()
 
-    # Models: 1: 1665.58, 2: 1664.49, 3: 1798.53, 4: 1657.2, noml: 1382.65
+    # Models: 1: 1691.07, 2: 1693.75, 3: 1820.67, 4: 1682.69, noml: 1352.65
     print("\nFinal Balance: ", balance)
 
 
