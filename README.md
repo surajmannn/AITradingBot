@@ -18,4 +18,6 @@ scikit-learn:               A library for machine learning, providing simple and
 
 
 # Use Command:
+```
 pip install mysql-connector-python pandas matplotlib yfinance ta tensorflow scikit-learn
+```
